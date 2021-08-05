@@ -5,6 +5,7 @@ using Bicep.Core.Diagnostics;
 using Bicep.Core.Modules;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Bicep.Core.Registry
 {
@@ -45,6 +46,6 @@ namespace Bicep.Core.Registry
         /// Returns a mapping of module references to error builders for modules that failed to be downloaded.
         /// </summary>
         /// <param name="references">module references</param>
-        IDictionary<ModuleReference, DiagnosticBuilder.ErrorBuilderDelegate> RestoreModules(IEnumerable<ModuleReference> references);
+        Task<IDictionary<ModuleReference, DiagnosticBuilder.ErrorBuilderDelegate>> RestoreModules(IEnumerable<ModuleReference> references);
     }
 }

@@ -7,6 +7,7 @@ using Bicep.Core.Modules;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Threading.Tasks;
 
 namespace Bicep.Core.Registry
 {
@@ -38,11 +39,11 @@ namespace Bicep.Core.Registry
             return null;
         }
 
-        public IDictionary<ModuleReference, DiagnosticBuilder.ErrorBuilderDelegate> RestoreModules(IEnumerable<ModuleReference> references)
+        public Task<IDictionary<ModuleReference, DiagnosticBuilder.ErrorBuilderDelegate>> RestoreModules(IEnumerable<ModuleReference> references)
         {
             // local modules are already present on the file system
             // and do not require init
-            return ImmutableDictionary<ModuleReference, DiagnosticBuilder.ErrorBuilderDelegate>.Empty;
+            return Task.FromResult<IDictionary<ModuleReference, DiagnosticBuilder.ErrorBuilderDelegate>>(ImmutableDictionary<ModuleReference, DiagnosticBuilder.ErrorBuilderDelegate>.Empty);
         }
 
         public bool IsModuleRestoreRequired(ModuleReference reference) => false;

@@ -168,10 +168,10 @@ namespace Bicep.LangServer.UnitTests.Registry
 
             public bool IsModuleRestoreRequired(ModuleReference reference) => true;
 
-            public IDictionary<ModuleReference, DiagnosticBuilder.ErrorBuilderDelegate> RestoreModules(IEnumerable<ModuleReference> references)
+            public Task<IDictionary<ModuleReference, DiagnosticBuilder.ErrorBuilderDelegate>> RestoreModules(IEnumerable<ModuleReference> references)
             {
                 this.ModuleRestores.Push(references);
-                return new Dictionary<ModuleReference, DiagnosticBuilder.ErrorBuilderDelegate>();
+                return Task.FromResult<IDictionary<ModuleReference, DiagnosticBuilder.ErrorBuilderDelegate>>(new Dictionary<ModuleReference, DiagnosticBuilder.ErrorBuilderDelegate>());
             }
 
             public Uri? TryGetLocalModuleEntryPointPath(Uri parentModuleUri, ModuleReference reference, out DiagnosticBuilder.ErrorBuilderDelegate? failureBuilder)

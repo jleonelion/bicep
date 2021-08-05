@@ -111,6 +111,7 @@ namespace Bicep.Cli
 
                 // Adds the various services required by the commands
                 .AddSingleton<IFileResolver, FileResolver>()
+                .AddSingleton<IModuleDispatcher, ModuleDispatcher>()
                 .AddSingleton<IModuleRegistryProvider, DefaultModuleRegistryProvider>()
                 .AddSingleton<DecompilationWriter>()
                 .AddSingleton<CompilationWriter>()

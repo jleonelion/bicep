@@ -12,7 +12,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Azure.Containers.ContainerRegistry" Version="1.0.0-alpha.20210720.1" />
 		<PackageReference Include="Azure.Deployments.Templates" Version="1.0.207" />
+		<PackageReference Include="Azure.Identity" Version="1.4.0" />
 		<PackageReference Include="JetBrains.Annotations" Version="2021.1.0">
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>

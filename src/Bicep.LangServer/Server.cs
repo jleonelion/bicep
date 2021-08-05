@@ -91,7 +91,7 @@ namespace Bicep.LanguageServer
                 Trace.Listeners.Add(new ServerLogTraceListener(server));
             }
 
-            var scheduler = server.GetService<IModuleRestoreScheduler>();
+            var scheduler = server.GetService<IModuleRestoreScheduler>() ?? throw new InvalidOperationException("Unable to locate the module restore scheduler in the DI container.");
             scheduler.Start();
 
             await server.WaitForExit;
