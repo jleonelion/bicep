@@ -52,6 +52,8 @@ namespace Bicep.LanguageServer
             }
 
             // TODO: This may cause race condition if the user is modifying the file at the same time
+            // need to make a shallow copy so it counts as a different file even though all the content is identical
+            // this was the easiest way to force the compilation to be regenerated
             var shallowCopy = new BicepFile(compilationContext.Compilation.SourceFileGrouping.EntryPoint);
             UpsertCompilationInternal(documentUri, null, shallowCopy);
         }
