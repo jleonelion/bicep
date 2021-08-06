@@ -112,6 +112,21 @@ namespace Bicep.Core.Registry
             return true;
         }
 
+        public void PruneRestoreStatuses()
+        {
+            // concurrent dictionary enumeration does NOT provide a point-in-time snapshot of values in the dictionary
+            // however it also does not take a lock on all the items
+            var dateTime = DateTime.UtcNow;
+            foreach (var (key, value) in this.restoreFailures)
+            {
+                if(IsFailureInfoExpired(value, dateTime))
+                {
+                    // value is expired - remove it
+                    this.restoreFailures.TryRemove(key, out _);
+                }
+            }
+        }
+
         private IModuleRegistry GetRegistry(ModuleReference moduleReference) =>
             this.registries.TryGetValue(moduleReference.Scheme, out var registry) ? registry : throw new InvalidOperationException($"Unexpected module reference scheme '{moduleReference.Scheme}'.");
 
@@ -153,7 +168,7 @@ namespace Bicep.Core.Registry
 
         private bool HasRestoreFailed(ModuleReference moduleReference, out DiagnosticBuilder.ErrorBuilderDelegate? failureBuilder)
         {
-            if (this.restoreFailures.TryGetValue(moduleReference, out var failureInfo) && DateTime.UtcNow < failureInfo.Expiration)
+            if (this.restoreFailures.TryGetValue(moduleReference, out var failureInfo) && !IsFailureInfoExpired(failureInfo, DateTime.UtcNow))
             {
                 // the restore operation failed on the module previously
                 // and the record of the failure has not yet expired
@@ -165,23 +180,29 @@ namespace Bicep.Core.Registry
             return false;
         }
 
+        private static bool IsFailureInfoExpired(RestoreFailureInfo failureInfo, DateTime dateTime) => dateTime >= failureInfo.Expiration;
+
         private void SetRestoreFailure(ModuleReference moduleReference, DiagnosticBuilder.ErrorBuilderDelegate failureBuilder)
         {
             // as the user is typing, the modules will keep getting recompiled
             // we can't keep retrying syntactically correct references to non-existent modules on every key press
             // absolute expiration here will ensure that the next retry is delayed until the specified interval passes
+            // we're not not doing sliding expiration because we want a retry to happen eventually
             // (we may consider adding an ability to immediately retry to the UX in the future as well)
             var expiration = DateTime.UtcNow.Add(FailureExpirationInterval);
-            this.restoreFailures.TryAdd(moduleReference, new RestoreFailureInfo(failureBuilder, expiration));
+            this.restoreFailures.TryAdd(moduleReference, new RestoreFailureInfo(moduleReference, failureBuilder, expiration));
         }
 
         private class RestoreFailureInfo
         {
-            public RestoreFailureInfo(DiagnosticBuilder.ErrorBuilderDelegate failureBuilder, DateTime expiration)
+            public RestoreFailureInfo(ModuleReference moduleReference, DiagnosticBuilder.ErrorBuilderDelegate failureBuilder, DateTime expiration)
             {
+                this.ModuleReference = moduleReference;
                 this.FailureBuilder = failureBuilder;
                 this.Expiration = expiration;
             }
+
+            public ModuleReference ModuleReference { get; }
 
             public DiagnosticBuilder.ErrorBuilderDelegate FailureBuilder { get; }
 

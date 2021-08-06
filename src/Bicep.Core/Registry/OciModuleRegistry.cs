@@ -5,8 +5,10 @@ using Azure.Identity;
 using Bicep.Core.Diagnostics;
 using Bicep.Core.FileSystem;
 using Bicep.Core.Modules;
+using Bicep.Core.Tracing;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -51,17 +53,22 @@ namespace Bicep.Core.Registry
             var statuses = new Dictionary<ModuleReference, DiagnosticBuilder.ErrorBuilderDelegate>();
             foreach(var reference in references.OfType<OciArtifactModuleReference>())
             {
-                var result = await this.client.PullAsync(reference);
-
-                if (!result.Success)
+                using (var timer = new ExecutionTimer($"Restore module {reference.FullyQualifiedReference}"))
                 {
-                    if(result.ErrorMessage is not null)
+                    var result = await this.client.PullAsync(reference);
+
+                    if (!result.Success)
                     {
-                        statuses.Add(reference, x => x.ModuleRestoreFailedWithMessage(reference.FullyQualifiedReference, result.ErrorMessage));
-                    }
-                    else
-                    {
-                        statuses.Add(reference, x => x.ModuleRestoreFailed(reference.FullyQualifiedReference));
+                        if (result.ErrorMessage is not null)
+                        {
+                            statuses.Add(reference, x => x.ModuleRestoreFailedWithMessage(reference.FullyQualifiedReference, result.ErrorMessage));
+                            timer.OnFail(result.ErrorMessage);
+                        }
+                        else
+                        {
+                            statuses.Add(reference, x => x.ModuleRestoreFailed(reference.FullyQualifiedReference));
+                            timer.OnFail();
+                        }
                     }
                 }
             }

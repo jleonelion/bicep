@@ -22,5 +22,7 @@ namespace Bicep.Core.Registry
         Uri? TryGetLocalModuleEntryPointUri(Uri parentModuleUri, ModuleReference moduleReference, out DiagnosticBuilder.ErrorBuilderDelegate? failureBuilder);
 
         Task<bool> RestoreModules(IEnumerable<ModuleReference> moduleReferences);
+
+        void PruneRestoreStatuses();
     }
 }
