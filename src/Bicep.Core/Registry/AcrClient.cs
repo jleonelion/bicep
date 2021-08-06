@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure;
 using Azure.Containers.ContainerRegistry;
 using Azure.Containers.ContainerRegistry.Specialized;
 using Azure.Core;
-using Azure.Identity;
 using Bicep.Core.Modules;
 using Bicep.Core.Registry.Oci;
 using Newtonsoft.Json;
@@ -30,31 +30,26 @@ namespace Bicep.Core.Registry
 
         public async Task<OciClientResult> PullAsync(OciArtifactModuleReference reference)
         {
-            string modulePath = GetLocalPackageDirectory(reference);
-
-            // ensure that the directory exists
-            try
-            {
-                Directory.CreateDirectory(modulePath);
-            }
-            catch(Exception exception)
-            {
-                return new(false, exception.Message);
-            }
-
             try
             {
                 var registryUri = new Uri($"https://{reference.Registry}");
 
                 var client = new ContainerRegistryClient(registryUri, tokenCredential);
                 string digest = await ResolveDigest(client, reference);
-                
+
+                string modulePath = GetLocalPackageDirectory(reference);
+                CreateModuleDirectory(modulePath);
+
                 var blobClient = new ContainerRegistryArtifactBlobClient(registryUri, tokenCredential, reference.Repository);
                 await PullDigest(blobClient, digest, modulePath);
 
                 return new(true, null);
             }
-            catch(OciException exception)
+            catch(RequestFailedException exception) when (exception.Status == 404)
+            {
+                return new(false, "Module not found.");
+            }
+            catch(AcrClientException exception)
             {
                 // we can trust the message in our own exception
                 return new(false, exception.Message);
@@ -65,12 +60,24 @@ namespace Bicep.Core.Registry
             }
         }
 
+        private static void CreateModuleDirectory(string modulePath)
+        {
+            try
+            {
+                // ensure that the directory exists
+                Directory.CreateDirectory(modulePath);
+            }
+            catch (Exception exception)
+            {
+                throw new AcrClientException("Unable to create the local module directory.", exception);
+            }
+        }
+
         private static async Task<string> ResolveDigest(ContainerRegistryClient client, OciArtifactModuleReference reference)
         {
             var artifact = client.GetArtifact(reference.Repository, reference.Tag);
-
             var manifestProperties = await artifact.GetManifestPropertiesAsync();
-
+            
             return manifestProperties.Value.Digest;
         }
 
@@ -145,9 +152,13 @@ namespace Bicep.Core.Registry
             return digest;
         }
 
-        private class OciException : Exception
+        private class AcrClientException : Exception
         {
-            public OciException(string message) : base(message)
+            public AcrClientException(string message) : base(message)
+            {
+            }
+
+            public AcrClientException(string message, Exception innerException) : base(message, innerException)
             {
             }
         }
