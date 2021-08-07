@@ -17,7 +17,7 @@ namespace Bicep.LanguageServer
         public static async Task Main()
             => await RunWithCancellationAsync(async cancellationToken =>
             {
-                string profilePath = MulticoreJIT.GetMulticoreJITPath();
+                string profilePath = DirHelper.GetTempPath();
                 ProfileOptimization.SetProfileRoot(profilePath);
                 ProfileOptimization.StartProfile("bicepserver.profile");
 

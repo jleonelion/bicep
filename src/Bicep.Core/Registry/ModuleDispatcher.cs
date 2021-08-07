@@ -9,7 +9,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Bicep.Core.Registry
@@ -32,6 +31,42 @@ namespace Bicep.Core.Registry
 
         public ImmutableArray<string> AvailableSchemes { get; }
 
+        public ModuleReference? TryGetModuleReference(string reference, out DiagnosticBuilder.ErrorBuilderDelegate? failureBuilder)
+        {
+            var parts = reference.Split(':', 2, System.StringSplitOptions.None);
+            switch (parts.Length)
+            {
+                case 1:
+                    // local path reference
+                    if (registries.TryGetValue(ModuleReferenceSchemes.Local, out var localRegistry))
+                    {
+                        return localRegistry.TryParseModuleReference(parts[0], out failureBuilder);
+                    }
+
+                    failureBuilder = x => x.UnknownModuleReferenceScheme(ModuleReferenceSchemes.Local, this.AvailableSchemes);
+                    return null;
+
+                case 2:
+                    var scheme = parts[0];
+
+                    if (!string.IsNullOrEmpty(scheme) && registries.TryGetValue(scheme, out var registry))
+                    {
+                        // the scheme is recognized
+                        var rawValue = parts[1];
+                        return registry.TryParseModuleReference(rawValue, out failureBuilder);
+                    }
+
+                    // unknown scheme
+                    failureBuilder = x => x.UnknownModuleReferenceScheme(scheme, this.AvailableSchemes);
+                    return null;
+
+                default:
+                    // empty string
+                    failureBuilder = x => x.ModulePathHasNotBeenSpecified();
+                    return null;
+            }
+        }
+
         public ModuleReference? TryGetModuleReference(ModuleDeclarationSyntax module, out DiagnosticBuilder.ErrorBuilderDelegate? failureBuilder)
         {
             var moduleReferenceString = SyntaxHelper.TryGetModulePath(module, out var getModulePathFailureBuilder);
@@ -41,7 +76,13 @@ namespace Bicep.Core.Registry
                 return null;
             }
 
-            return this.TryParseModuleReference(moduleReferenceString, out failureBuilder);
+            return this.TryGetModuleReference(moduleReferenceString, out failureBuilder);
+        }
+
+        public RegistryCapabilities GetRegistryCapabilities(ModuleReference moduleReference)
+        {
+            var registry = this.GetRegistry(moduleReference);
+            return registry.Capabilities;
         }
 
         public ModuleRestoreStatus GetModuleRestoreStatus(ModuleReference moduleReference, out DiagnosticBuilder.ErrorBuilderDelegate? failureBuilder)
@@ -129,42 +170,6 @@ namespace Bicep.Core.Registry
 
         private IModuleRegistry GetRegistry(ModuleReference moduleReference) =>
             this.registries.TryGetValue(moduleReference.Scheme, out var registry) ? registry : throw new InvalidOperationException($"Unexpected module reference scheme '{moduleReference.Scheme}'.");
-
-        private ModuleReference? TryParseModuleReference(string reference, out DiagnosticBuilder.ErrorBuilderDelegate? failureBuilder)
-        {
-            var parts = reference.Split(':', 2, System.StringSplitOptions.None);
-            switch (parts.Length)
-            {
-                case 1:
-                    // local path reference
-                    if (registries.TryGetValue(ModuleReferenceSchemes.Local, out var localRegistry))
-                    {
-                        return localRegistry.TryParseModuleReference(parts[0], out failureBuilder);
-                    }
-
-                    failureBuilder = x => x.UnknownModuleReferenceScheme(ModuleReferenceSchemes.Local, this.AvailableSchemes);
-                    return null;
-
-                case 2:
-                    var scheme = parts[0];
-
-                    if (!string.IsNullOrEmpty(scheme) && registries.TryGetValue(scheme, out var registry))
-                    {
-                        // the scheme is recognized
-                        var rawValue = parts[1];
-                        return registry.TryParseModuleReference(rawValue, out failureBuilder);
-                    }
-
-                    // unknown scheme
-                    failureBuilder = x => x.UnknownModuleReferenceScheme(scheme, this.AvailableSchemes);
-                    return null;
-
-                default:
-                    // empty string
-                    failureBuilder = x => x.ModulePathHasNotBeenSpecified();
-                    return null;
-            }
-        }
 
         private bool HasRestoreFailed(ModuleReference moduleReference, out DiagnosticBuilder.ErrorBuilderDelegate? failureBuilder)
         {

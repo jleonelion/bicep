@@ -20,6 +20,11 @@ namespace Bicep.Core.Registry
         string Scheme { get; }
 
         /// <summary>
+        /// Gets the capabilities of this registry.
+        /// </summary>
+        RegistryCapabilities Capabilities { get; }
+
+        /// <summary>
         /// Attempts to parse the specified unqualified reference or returns a failure builder.
         /// </summary>
         /// <param name="reference">The unqualified module reference</param>

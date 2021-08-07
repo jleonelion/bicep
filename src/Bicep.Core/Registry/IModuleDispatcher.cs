@@ -15,7 +15,11 @@ namespace Bicep.Core.Registry
     {
         ImmutableArray<string> AvailableSchemes { get; }
 
+        ModuleReference? TryGetModuleReference(string reference, out DiagnosticBuilder.ErrorBuilderDelegate? failureBuilder);
+
         ModuleReference? TryGetModuleReference(ModuleDeclarationSyntax module, out DiagnosticBuilder.ErrorBuilderDelegate? failureBuilder);
+
+        RegistryCapabilities GetRegistryCapabilities(ModuleReference moduleReference);
 
         ModuleRestoreStatus GetModuleRestoreStatus(ModuleReference moduleReference, out DiagnosticBuilder.ErrorBuilderDelegate? errorDetailBuilder);
 

@@ -31,7 +31,7 @@ namespace Bicep.Cli
 
         public static int Main(string[] args)
         {
-            string profilePath = MulticoreJIT.GetMulticoreJITPath();
+            string profilePath = DirHelper.GetTempPath();
             ProfileOptimization.SetProfileRoot(profilePath);
             ProfileOptimization.StartProfile("bicep.profile");
             Console.OutputEncoding = TemplateEmitter.UTF8EncodingWithoutBom;
@@ -61,6 +61,9 @@ namespace Bicep.Cli
 
                     case DecompileArguments decompileArguments when decompileArguments.CommandName == Constants.Command.Decompile: // bicep decompile [options]
                         return serviceProvider.GetRequiredService<DecompileCommand>().Run(decompileArguments);
+
+                    case PublishArguments publishArguments when publishArguments.CommandName == Constants.Command.Publish: // bicep publish [options]
+                        return serviceProvider.GetRequiredService<PublishCommand>().Run(publishArguments);
 
                     case RootArguments rootArguments when rootArguments.CommandName == Constants.Command.Root: // bicep [options]
                         return serviceProvider.GetRequiredService<RootCommand>().Run(rootArguments);

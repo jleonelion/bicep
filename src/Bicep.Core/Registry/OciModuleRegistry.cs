@@ -8,7 +8,6 @@ using Bicep.Core.Modules;
 using Bicep.Core.Tracing;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,6 +28,8 @@ namespace Bicep.Core.Registry
         }
 
         public string Scheme => ModuleReferenceSchemes.Oci;
+
+        public RegistryCapabilities Capabilities => RegistryCapabilities.Publish;
 
         public ModuleReference? TryParseModuleReference(string reference, out DiagnosticBuilder.ErrorBuilderDelegate? failureBuilder) => OciArtifactModuleReference.TryParse(reference, out failureBuilder);
 

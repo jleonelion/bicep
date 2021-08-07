@@ -22,6 +22,8 @@ namespace Bicep.Core.Registry
 
         public string Scheme => ModuleReferenceSchemes.Local;
 
+        public RegistryCapabilities Capabilities => RegistryCapabilities.Default;
+
         public ModuleReference? TryParseModuleReference(string reference, out DiagnosticBuilder.ErrorBuilderDelegate? failureBuilder) => LocalModuleReference.TryParse(reference, out failureBuilder);
 
         public Uri? TryGetLocalModuleEntryPointPath(Uri parentModuleUri, ModuleReference reference, out DiagnosticBuilder.ErrorBuilderDelegate? failureBuilder)
