@@ -124,6 +124,8 @@ namespace Bicep.LanguageServer.Registry
                 {
                     notification.CompilationManager.RefreshCompilation(notification.Uri);
                 }
+
+                this.moduleDispatcher.PruneRestoreStatuses();
             }
         }
 
