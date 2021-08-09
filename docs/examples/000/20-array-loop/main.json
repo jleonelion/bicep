@@ -17,7 +17,7 @@
       "Pam"
     ]
   },
-  "resources": [],
+  "resources": {},
   "outputs": {
     "out1": {
       "type": "array",

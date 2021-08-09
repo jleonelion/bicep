@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "4312598347921939130"
+      "templateHash": "11878301838729054042"
     }
   },
   "parameters": {
@@ -14,8 +14,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "storageAcc": {
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2019-06-01",
       "name": "[parameters('accountName')]",
@@ -25,7 +25,7 @@
       },
       "location": "[resourceGroup().location]"
     },
-    {
+    "lockResource": {
       "type": "Microsoft.Authorization/locks",
       "apiVersion": "2016-09-01",
       "scope": "[format('Microsoft.Storage/storageAccounts/{0}', parameters('accountName'))]",
@@ -34,8 +34,8 @@
         "level": "CanNotDelete"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', parameters('accountName'))]"
+        "storageAcc"
       ]
     }
-  ]
+  }
 }

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "11943737649630419837"
+      "templateHash": "393226433129933346"
     }
   },
   "parameters": {
@@ -32,8 +32,8 @@
     "automationaccountName": "[toLower(format('aa{0}', parameters('appName')))]",
     "automationaccountDiagName": "[toLower(format('diag-aa{0}', parameters('appName')))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "automation_log_analytics": {
       "type": "Microsoft.OperationalInsights/workspaces",
       "apiVersion": "2020-03-01-preview",
       "name": "[variables('workspaceName')]",
@@ -45,7 +45,7 @@
         "retentionInDays": "[parameters('dataRetention')]"
       }
     },
-    {
+    "automation_account": {
       "type": "Microsoft.Automation/automationAccounts",
       "apiVersion": "2015-10-31",
       "name": "[variables('automationaccountName')]",
@@ -56,7 +56,7 @@
         }
       }
     },
-    {
+    "automation_account_diagnostic": {
       "type": "Microsoft.Insights/diagnosticSettings",
       "apiVersion": "2017-05-01-preview",
       "scope": "[format('Microsoft.Automation/automationAccounts/{0}', variables('automationaccountName'))]",
@@ -71,9 +71,9 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Automation/automationAccounts', variables('automationaccountName'))]",
-        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
+        "automation_account",
+        "automation_log_analytics"
       ]
     }
-  ]
+  }
 }

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "10859804720469133213"
+      "templateHash": "7165665379884884346"
     }
   },
   "parameters": {
@@ -81,8 +81,8 @@
       }
     }
   },
-  "resources": [
-    {
+  "resources": {
+    "sqlLogicalServerRes": {
       "type": "Microsoft.Sql/servers",
       "apiVersion": "2021-02-01-preview",
       "name": "[parameters('sqlLogicalServer').name]",
@@ -99,7 +99,7 @@
         "publicNetworkAccess": "[parameters('sqlLogicalServer').publicNetworkAccess]"
       }
     },
-    {
+    "azureAdIntegration": {
       "condition": "[not(empty(parameters('sqlLogicalServer').azureActiveDirectoryAdministrator.objectId))]",
       "type": "Microsoft.Sql/servers/administrators",
       "apiVersion": "2021-02-01-preview",
@@ -111,10 +111,10 @@
         "tenantId": "[parameters('sqlLogicalServer').azureActiveDirectoryAdministrator.tenantId]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', parameters('sqlLogicalServer').name)]"
+        "sqlLogicalServerRes"
       ]
     },
-    {
+    "azureDefender": {
       "type": "Microsoft.Sql/servers/securityAlertPolicies",
       "apiVersion": "2021-02-01-preview",
       "name": "[format('{0}/{1}', parameters('sqlLogicalServer').name, 'Default')]",
@@ -125,10 +125,10 @@
         "disabledAlerts": "[parameters('sqlLogicalServer').azureDefender.disabledRules]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', parameters('sqlLogicalServer').name)]"
+        "sqlLogicalServerRes"
       ]
     },
-    {
+    "vulnerabilityAssessments": {
       "condition": "[and(and(parameters('sqlLogicalServer').azureDefender.enabled, parameters('sqlLogicalServer').azureDefender.vulnerabilityAssessments.recurringScans), not(empty(parameters('sqlLogicalServer').azureDefender.vulnerabilityAssessments.storageAccount.name)))]",
       "type": "Microsoft.Sql/servers/vulnerabilityAssessments",
       "apiVersion": "2021-02-01-preview",
@@ -143,11 +143,11 @@
         "storageAccountAccessKey": "[if(not(empty(parameters('sqlLogicalServer').azureDefender.vulnerabilityAssessments.storageAccount.name)), listKeys(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('sqlLogicalServer').azureDefender.vulnerabilityAssessments.storageAccount.resourceGroupName), 'Microsoft.Storage/storageAccounts', parameters('sqlLogicalServer').azureDefender.vulnerabilityAssessments.storageAccount.name), '2021-04-01').keys[0].value, '')]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers/securityAlertPolicies', parameters('sqlLogicalServer').name, 'Default')]",
-        "[resourceId('Microsoft.Sql/servers', parameters('sqlLogicalServer').name)]"
+        "azureDefender",
+        "sqlLogicalServerRes"
       ]
     },
-    {
+    "auditSettings": {
       "type": "Microsoft.Sql/servers/auditingSettings",
       "apiVersion": "2021-02-01-preview",
       "name": "[format('{0}/{1}', parameters('sqlLogicalServer').name, 'default')]",
@@ -162,10 +162,10 @@
         "isDevopsAuditEnabled": "[parameters('sqlLogicalServer').diagnosticLogsAndMetrics.microsoftSupportOperationsAuditLogs]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', parameters('sqlLogicalServer').name)]"
+        "sqlLogicalServerRes"
       ]
     },
-    {
+    "dummyDeployments": {
       "condition": "[and(parameters('sqlLogicalServer').diagnosticLogsAndMetrics.auditLogs, not(empty(parameters('sqlLogicalServer').diagnosticLogsAndMetrics.name)))]",
       "copy": {
         "name": "dummyDeployments",
@@ -185,10 +185,10 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', parameters('sqlLogicalServer').name)]"
+        "sqlLogicalServerRes"
       ]
     },
-    {
+    "auditDiagnosticSettings": {
       "condition": "[parameters('sqlLogicalServer').diagnosticLogsAndMetrics.auditLogs]",
       "type": "Microsoft.Insights/diagnosticSettings",
       "apiVersion": "2017-05-01-preview",
@@ -208,13 +208,13 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers/auditingSettings', parameters('sqlLogicalServer').name, 'default')]",
+        "auditSettings",
         "dummyDeployments",
         "sqlDatabases",
-        "[resourceId('Microsoft.Sql/servers', parameters('sqlLogicalServer').name)]"
+        "sqlLogicalServerRes"
       ]
     },
-    {
+    "diagnosticSettings": {
       "condition": "[not(empty(parameters('sqlLogicalServer').diagnosticLogsAndMetrics.name))]",
       "type": "Microsoft.Insights/diagnosticSettings",
       "apiVersion": "2017-05-01-preview",
@@ -244,10 +244,10 @@
       "dependsOn": [
         "dummyDeployments",
         "sqlDatabases",
-        "[resourceId('Microsoft.Sql/servers', parameters('sqlLogicalServer').name)]"
+        "sqlLogicalServerRes"
       ]
     },
-    {
+    "sqlFirewallRules": {
       "copy": {
         "name": "sqlFirewallRules",
         "count": "[length(parameters('sqlLogicalServer').firewallRules)]"
@@ -275,7 +275,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "14005243826429444249"
+              "templateHash": "7089802473118549098"
             }
           },
           "parameters": {
@@ -293,8 +293,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "firewallRule": {
               "type": "Microsoft.Sql/servers/firewallRules",
               "apiVersion": "2021-02-01-preview",
               "name": "[format('{0}/{1}', parameters('sqlServerName'), parameters('sqlFirewallRule').name)]",
@@ -303,14 +303,14 @@
                 "endIpAddress": "[parameters('sqlFirewallRule').endIpAddress]"
               }
             }
-          ]
+          }
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', parameters('sqlLogicalServer').name)]"
+        "sqlLogicalServerRes"
       ]
     },
-    {
+    "sqlDatabases": {
       "copy": {
         "name": "sqlDatabases",
         "count": "[length(parameters('sqlLogicalServer').databases)]"
@@ -341,7 +341,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "12560223677407066596"
+              "templateHash": "15831549101388917184"
             }
           },
           "parameters": {
@@ -362,8 +362,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "sqlDb": {
               "type": "Microsoft.Sql/servers/databases",
               "apiVersion": "2020-02-02-preview",
               "name": "[format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name)]",
@@ -384,7 +384,7 @@
                 "autoPauseDelay": "[if(equals(parameters('sqlDatabase').autoPauseDelay, 0), null(), parameters('sqlDatabase').autoPauseDelay)]"
               }
             },
-            {
+            "transparentDataEncryption": {
               "type": "Microsoft.Sql/servers/databases/transparentDataEncryption",
               "apiVersion": "2014-04-01",
               "name": "[format('{0}/{1}/{2}', split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[0], split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[1], 'current')]",
@@ -392,10 +392,10 @@
                 "status": "[parameters('sqlDatabase').dataEncryption]"
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Sql/servers/databases', split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[0], split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[1])]"
+                "sqlDb"
               ]
             },
-            {
+            "longTermBackup": {
               "condition": "[parameters('sqlDatabase').longTermBackup.enabled]",
               "type": "Microsoft.Sql/servers/databases/backupLongTermRetentionPolicies",
               "apiVersion": "2021-02-01-preview",
@@ -407,12 +407,12 @@
                 "weekOfYear": "[parameters('sqlDatabase').longTermBackup.weekOfYear]"
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Resources/deployments', format('shortTermBackup-{0}', uniqueString(parameters('sqlServerName'), parameters('sqlDatabase').name)))]",
-                "[resourceId('Microsoft.Sql/servers/databases', split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[0], split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[1])]",
-                "[resourceId('Microsoft.Sql/servers/databases/transparentDataEncryption', split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[0], split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[1], 'current')]"
+                "shortTermBackup",
+                "sqlDb",
+                "transparentDataEncryption"
               ]
             },
-            {
+            "vulnerabilityAssessments": {
               "condition": "[and(and(parameters('sqlDatabase').azureDefender.enabled, parameters('sqlDatabase').azureDefender.vulnerabilityAssessments.recurringScans), not(empty(parameters('sqlDatabase').azureDefender.vulnerabilityAssessments.storageAccount.name)))]",
               "type": "Microsoft.Sql/servers/databases/vulnerabilityAssessments",
               "apiVersion": "2021-02-01-preview",
@@ -427,12 +427,12 @@
                 "storageAccountAccessKey": "[if(not(empty(parameters('sqlDatabase').azureDefender.vulnerabilityAssessments.storageAccount.name)), listKeys(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('sqlDatabase').azureDefender.vulnerabilityAssessments.storageAccount.resourceGroupName), 'Microsoft.Storage/storageAccounts', parameters('sqlDatabase').azureDefender.vulnerabilityAssessments.storageAccount.name), '2021-04-01').keys[0].value, '')]"
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Resources/deployments', format('azureDefender-{0}', uniqueString(parameters('sqlServerName'), parameters('sqlDatabase').name)))]",
-                "[resourceId('Microsoft.Sql/servers/databases', split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[0], split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[1])]",
-                "[resourceId('Microsoft.Sql/servers/databases/transparentDataEncryption', split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[0], split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[1], 'current')]"
+                "azureDefender",
+                "sqlDb",
+                "transparentDataEncryption"
               ]
             },
-            {
+            "auditDiagnosticSettings": {
               "condition": "[parameters('sqlDatabase').diagnosticLogsAndMetrics.auditLogs]",
               "type": "Microsoft.Insights/diagnosticSettings",
               "apiVersion": "2017-05-01-preview",
@@ -448,12 +448,12 @@
                 ]
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Resources/deployments', format('auditSettings-{0}', uniqueString(parameters('sqlServerName'), parameters('sqlDatabase').name)))]",
-                "[resourceId('Microsoft.Sql/servers/databases', split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[0], split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[1])]",
-                "[resourceId('Microsoft.Sql/servers/databases/transparentDataEncryption', split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[0], split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[1], 'current')]"
+                "auditSettings",
+                "sqlDb",
+                "transparentDataEncryption"
               ]
             },
-            {
+            "diagnosticSettings": {
               "condition": "[not(empty(parameters('sqlDatabase').diagnosticLogsAndMetrics.name))]",
               "type": "Microsoft.Insights/diagnosticSettings",
               "apiVersion": "2017-05-01-preview",
@@ -481,11 +481,11 @@
                 "workspaceId": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('sqlDatabase').diagnosticLogsAndMetrics.subscriptionId, parameters('sqlDatabase').diagnosticLogsAndMetrics.resourceGroupName), 'Microsoft.OperationalInsights/workspaces', parameters('sqlDatabase').diagnosticLogsAndMetrics.name)]"
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Sql/servers/databases', split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[0], split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[1])]",
-                "[resourceId('Microsoft.Sql/servers/databases/transparentDataEncryption', split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[0], split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[1], 'current')]"
+                "sqlDb",
+                "transparentDataEncryption"
               ]
             },
-            {
+            "shortTermBackup": {
               "condition": "[not(equals(parameters('sqlDatabase').shortTermBackupRetention, 0))]",
               "type": "Microsoft.Resources/deployments",
               "apiVersion": "2019-10-01",
@@ -510,7 +510,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "dev",
-                      "templateHash": "13857232367360321477"
+                      "templateHash": "8953699969147965698"
                     }
                   },
                   "parameters": {
@@ -522,8 +522,8 @@
                     }
                   },
                   "functions": [],
-                  "resources": [
-                    {
+                  "resources": {
+                    "shortTermBackup": {
                       "type": "Microsoft.Sql/servers/databases/backupShortTermRetentionPolicies",
                       "apiVersion": "2021-02-01-preview",
                       "name": "[format('{0}/{1}/Default', parameters('sqlServerName'), parameters('sqlDatabase').name)]",
@@ -531,15 +531,15 @@
                         "retentionDays": "[parameters('sqlDatabase').shortTermBackupRetention]"
                       }
                     }
-                  ]
+                  }
                 }
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Sql/servers/databases', split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[0], split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[1])]",
-                "[resourceId('Microsoft.Sql/servers/databases/transparentDataEncryption', split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[0], split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[1], 'current')]"
+                "sqlDb",
+                "transparentDataEncryption"
               ]
             },
-            {
+            "azureDefender": {
               "type": "Microsoft.Resources/deployments",
               "apiVersion": "2019-10-01",
               "name": "[format('azureDefender-{0}', uniqueString(parameters('sqlServerName'), parameters('sqlDatabase').name))]",
@@ -563,7 +563,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "dev",
-                      "templateHash": "2829092679645401993"
+                      "templateHash": "8056382486247414519"
                     }
                   },
                   "parameters": {
@@ -575,8 +575,8 @@
                     }
                   },
                   "functions": [],
-                  "resources": [
-                    {
+                  "resources": {
+                    "azureDefender": {
                       "type": "Microsoft.Sql/servers/databases/securityAlertPolicies",
                       "apiVersion": "2021-02-01-preview",
                       "name": "[format('{0}/{1}/Default', parameters('sqlServerName'), parameters('sqlDatabase').name)]",
@@ -587,15 +587,15 @@
                         "disabledAlerts": "[parameters('sqlDatabase').azureDefender.disabledRules]"
                       }
                     }
-                  ]
+                  }
                 }
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Sql/servers/databases', split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[0], split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[1])]",
-                "[resourceId('Microsoft.Sql/servers/databases/transparentDataEncryption', split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[0], split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[1], 'current')]"
+                "sqlDb",
+                "transparentDataEncryption"
               ]
             },
-            {
+            "auditSettings": {
               "type": "Microsoft.Resources/deployments",
               "apiVersion": "2019-10-01",
               "name": "[format('auditSettings-{0}', uniqueString(parameters('sqlServerName'), parameters('sqlDatabase').name))]",
@@ -619,7 +619,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "dev",
-                      "templateHash": "5447449594683998530"
+                      "templateHash": "13869000694118794907"
                     }
                   },
                   "parameters": {
@@ -638,8 +638,8 @@
                       "BATCH_COMPLETED_GROUP"
                     ]
                   },
-                  "resources": [
-                    {
+                  "resources": {
+                    "auditSettings": {
                       "type": "Microsoft.Sql/servers/databases/auditingSettings",
                       "apiVersion": "2021-02-01-preview",
                       "name": "[format('{0}/{1}/Default', parameters('sqlServerName'), parameters('sqlDatabase').name)]",
@@ -653,20 +653,20 @@
                         "isAzureMonitorTargetEnabled": "[parameters('sqlDatabase').diagnosticLogsAndMetrics.auditLogs]"
                       }
                     }
-                  ]
+                  }
                 }
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Sql/servers/databases', split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[0], split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[1])]",
-                "[resourceId('Microsoft.Sql/servers/databases/transparentDataEncryption', split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[0], split(format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDatabase').name), '/')[1], 'current')]"
+                "sqlDb",
+                "transparentDataEncryption"
               ]
             }
-          ]
+          }
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', parameters('sqlLogicalServer').name)]"
+        "sqlLogicalServerRes"
       ]
     }
-  ]
+  }
 }

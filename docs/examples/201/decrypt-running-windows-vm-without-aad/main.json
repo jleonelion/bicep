@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "573345119519894858"
+      "templateHash": "7284010590457977402"
     }
   },
   "parameters": {
@@ -26,8 +26,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "vmExt": {
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "apiVersion": "2020-06-01",
       "name": "[format('{0}/AzureDiskEncryption', parameters('vmName'))]",
@@ -44,5 +44,5 @@
         }
       }
     }
-  ]
+  }
 }

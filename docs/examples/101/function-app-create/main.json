@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "969745789068173569"
+      "templateHash": "13215502188103231014"
     }
   },
   "parameters": {
@@ -36,8 +36,8 @@
       "AppName": "My Function App"
     }
   },
-  "resources": [
-    {
+  "resources": {
+    "storageAccount": {
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2019-06-01",
       "name": "[variables('storageAccountName')]",
@@ -65,7 +65,7 @@
       },
       "tags": "[variables('appTags')]"
     },
-    {
+    "blobServices": {
       "type": "Microsoft.Storage/storageAccounts/blobServices",
       "apiVersion": "2019-06-01",
       "name": "[format('{0}/{1}', variables('storageAccountName'), 'default')]",
@@ -79,10 +79,10 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+        "storageAccount"
       ]
     },
-    {
+    "appInsights": {
       "type": "Microsoft.Insights/components",
       "apiVersion": "2020-02-02-preview",
       "name": "[variables('appInsightsName')]",
@@ -96,7 +96,7 @@
       },
       "tags": "[variables('appTags')]"
     },
-    {
+    "appService": {
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2020-06-01",
       "name": "[variables('appServiceName')]",
@@ -121,7 +121,7 @@
       },
       "tags": "[variables('appTags')]"
     },
-    {
+    "functionApp": {
       "type": "Microsoft.Web/sites",
       "apiVersion": "2020-06-01",
       "name": "[variables('functionAppName')]",
@@ -157,11 +157,11 @@
             },
             {
               "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-              "value": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightsName'))).InstrumentationKey]"
+              "value": "[reference('appInsights').InstrumentationKey]"
             },
             {
               "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
-              "value": "[format('InstrumentationKey={0}', reference(resourceId('Microsoft.Insights/components', variables('appInsightsName'))).InstrumentationKey)]"
+              "value": "[format('InstrumentationKey={0}', reference('appInsights').InstrumentationKey)]"
             },
             {
               "name": "FUNCTIONS_WORKER_RUNTIME",
@@ -183,12 +183,12 @@
       },
       "tags": "[variables('appTags')]",
       "dependsOn": [
-        "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]",
-        "[resourceId('Microsoft.Web/serverfarms', variables('appServiceName'))]",
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+        "appInsights",
+        "appService",
+        "storageAccount"
       ]
     },
-    {
+    "functionAppConfig": {
       "type": "Microsoft.Web/sites/config",
       "apiVersion": "2020-06-01",
       "name": "[format('{0}/{1}', variables('functionAppName'), 'web')]",
@@ -264,10 +264,10 @@
         "preWarmedInstanceCount": 0
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]"
+        "functionApp"
       ]
     },
-    {
+    "functionAppBinding": {
       "type": "Microsoft.Web/sites/hostNameBindings",
       "apiVersion": "2020-06-01",
       "name": "[format('{0}/{1}', variables('functionAppName'), format('{0}.azurewebsites.net', variables('functionAppName')))]",
@@ -276,8 +276,8 @@
         "hostNameType": "Verified"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]"
+        "functionApp"
       ]
     }
-  ]
+  }
 }

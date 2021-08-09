@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "3594538944700350892"
+      "templateHash": "6572560582753684898"
     }
   },
   "parameters": {
@@ -39,8 +39,8 @@
     "method": "GET",
     "workflowSchema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#"
   },
-  "resources": [
-    {
+  "resources": {
+    "stg": {
       "type": "Microsoft.Logic/workflows",
       "apiVersion": "2019-05-01",
       "name": "[parameters('logicAppName')]",
@@ -79,5 +79,5 @@
         }
       }
     }
-  ]
+  }
 }

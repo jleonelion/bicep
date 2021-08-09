@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "5868187186886427302"
+      "templateHash": "10576886397994165446"
     }
   },
   "parameters": {
@@ -29,8 +29,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "server": {
       "type": "Microsoft.Sql/servers",
       "apiVersion": "2019-06-01-preview",
       "name": "[parameters('serverName')]",
@@ -40,7 +40,7 @@
         "administratorLoginPassword": "[parameters('administratorLoginPassword')]"
       }
     },
-    {
+    "sqlDB": {
       "type": "Microsoft.Sql/servers/databases",
       "apiVersion": "2020-08-01-preview",
       "name": "[format('{0}/{1}', parameters('serverName'), parameters('sqlDBName'))]",
@@ -50,8 +50,8 @@
         "tier": "Standard"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', parameters('serverName'))]"
+        "server"
       ]
     }
-  ]
+  }
 }

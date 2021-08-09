@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "6881182543139474466"
+      "templateHash": "13142635324597291453"
     }
   },
   "parameters": {
@@ -24,8 +24,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "dataLake": {
       "type": "Microsoft.DataLakeStore/accounts",
       "apiVersion": "2016-11-01",
       "name": "[parameters('accountName')]",
@@ -38,5 +38,5 @@
         }
       }
     }
-  ]
+  }
 }

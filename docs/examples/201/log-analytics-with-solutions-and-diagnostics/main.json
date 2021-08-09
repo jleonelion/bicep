@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "606685342937214454"
+      "templateHash": "17199380068863366502"
     }
   },
   "parameters": {
@@ -31,8 +31,8 @@
     "environmentName": "Production",
     "costCenterName": "IT"
   },
-  "resources": [
-    {
+  "resources": {
+    "logAnalyticsWorkspace": {
       "type": "Microsoft.OperationalInsights/workspaces",
       "apiVersion": "2020-03-01-preview",
       "name": "[parameters('logAnalyticsWorkspaceName')]",
@@ -51,7 +51,7 @@
         }
       }
     },
-    {
+    "logAnalyticsWorkspaceDiagnostics": {
       "type": "Microsoft.Insights/diagnosticSettings",
       "apiVersion": "2017-05-01-preview",
       "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('logAnalyticsWorkspaceName'))]",
@@ -80,10 +80,10 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsWorkspaceName'))]"
+        "logAnalyticsWorkspace"
       ]
     },
-    {
+    "solutionsVMInsights": {
       "type": "Microsoft.OperationsManagement/solutions",
       "apiVersion": "2015-11-01-preview",
       "name": "[variables('vmInsights').name]",
@@ -98,10 +98,10 @@
         "promotionCode": ""
       },
       "dependsOn": [
-        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsWorkspaceName'))]"
+        "logAnalyticsWorkspace"
       ]
     },
-    {
+    "solutionsContainerInsights": {
       "type": "Microsoft.OperationsManagement/solutions",
       "apiVersion": "2015-11-01-preview",
       "name": "[variables('containerInsights').name]",
@@ -116,8 +116,8 @@
         "promotionCode": ""
       },
       "dependsOn": [
-        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsWorkspaceName'))]"
+        "logAnalyticsWorkspace"
       ]
     }
-  ]
+  }
 }

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "14734149438817986739"
+      "templateHash": "2049738511398192080"
     }
   },
   "parameters": {
@@ -50,8 +50,8 @@
     },
     "privateIPAllocationMethod": "Dynamic"
   },
-  "resources": [
-    {
+  "resources": {
+    "vnet": {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2020-05-01",
       "name": "[parameters('vnetName')]",
@@ -72,7 +72,7 @@
         ]
       }
     },
-    {
+    "vmNic": {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2017-06-01",
       "name": "[variables('defaultVmNicName')]",
@@ -91,10 +91,10 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
+        "vnet"
       ]
     },
-    {
+    "vm": {
       "type": "Microsoft.Compute/virtualMachines",
       "apiVersion": "2019-07-01",
       "name": "[parameters('vmName')]",
@@ -132,10 +132,10 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkInterfaces', variables('defaultVmNicName'))]"
+        "vmNic"
       ]
     },
-    {
+    "vmgpu": {
       "condition": "[parameters('installNVidiaGPUDriver')]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "apiVersion": "2020-06-01",
@@ -149,8 +149,8 @@
         "settings": {}
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
+        "vm"
       ]
     }
-  ]
+  }
 }

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "2829092679645401993"
+      "templateHash": "8056382486247414519"
     }
   },
   "parameters": {
@@ -17,8 +17,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "azureDefender": {
       "type": "Microsoft.Sql/servers/databases/securityAlertPolicies",
       "apiVersion": "2021-02-01-preview",
       "name": "[format('{0}/{1}/Default', parameters('sqlServerName'), parameters('sqlDatabase').name)]",
@@ -29,5 +29,5 @@
         "disabledAlerts": "[parameters('sqlDatabase').azureDefender.disabledRules]"
       }
     }
-  ]
+  }
 }

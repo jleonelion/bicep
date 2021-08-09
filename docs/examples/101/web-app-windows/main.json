@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "1535164562759769815"
+      "templateHash": "9462063800753844133"
     }
   },
   "parameters": {
@@ -31,8 +31,8 @@
     "appServicePlanName": "[toLower(format('asp-{0}', parameters('appName')))]",
     "webSiteName": "[toLower(format('wapp-{0}', parameters('appName')))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "appServicePlan": {
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2020-06-01",
       "name": "[variables('appServicePlanName')]",
@@ -46,7 +46,7 @@
         "ProjectName": "[parameters('appName')]"
       }
     },
-    {
+    "appService": {
       "type": "Microsoft.Web/sites",
       "apiVersion": "2020-06-01",
       "name": "[variables('webSiteName')]",
@@ -66,8 +66,8 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]"
+        "appServicePlan"
       ]
     }
-  ]
+  }
 }

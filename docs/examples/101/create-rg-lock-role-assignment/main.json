@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "16258936803519211079"
+      "templateHash": "4089459027769346904"
     }
   },
   "parameters": {
@@ -43,8 +43,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "newRg": {
       "type": "Microsoft.Resources/resourceGroups",
       "apiVersion": "2019-10-01",
       "name": "[parameters('rgName')]",
@@ -54,7 +54,7 @@
       },
       "properties": {}
     },
-    {
+    "applyLock": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "applyLock",
@@ -82,7 +82,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "15567308115178212258"
+              "templateHash": "16069463397670893754"
             }
           },
           "parameters": {
@@ -106,8 +106,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "dontDeleteLock": {
               "type": "Microsoft.Authorization/locks",
               "apiVersion": "2016-09-01",
               "name": "DontDelete",
@@ -116,7 +116,7 @@
                 "notes": "Prevent deletion of the resourceGroup"
               }
             },
-            {
+            "roleAssignment": {
               "type": "Microsoft.Authorization/roleAssignments",
               "apiVersion": "2020-04-01-preview",
               "name": "[guid(parameters('roleAssignmentName'))]",
@@ -125,12 +125,12 @@
                 "principalId": "[parameters('principalId')]"
               }
             }
-          ]
+          }
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', parameters('rgName'))]"
+        "newRg"
       ]
     }
-  ]
+  }
 }

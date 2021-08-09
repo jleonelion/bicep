@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "4833412814982595185"
+      "templateHash": "2506570776450525040"
     }
   },
   "parameters": {
@@ -18,8 +18,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "appinsights": {
       "type": "Microsoft.Insights/components",
       "apiVersion": "2018-05-01-preview",
       "name": "[parameters('appInsightsName')]",
@@ -29,7 +29,7 @@
         "Application_Type": "web"
       }
     },
-    {
+    "dashboard": {
       "type": "Microsoft.Portal/dashboards",
       "apiVersion": "2015-08-01-preview",
       "name": "[guid(resourceGroup().name, 'dashboard')]",
@@ -192,8 +192,8 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Insights/components', parameters('appInsightsName'))]"
+        "appinsights"
       ]
     }
-  ]
+  }
 }

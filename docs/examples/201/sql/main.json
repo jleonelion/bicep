@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "16046128587010768920"
+      "templateHash": "6967348784256656766"
     }
   },
   "parameters": {
@@ -36,8 +36,8 @@
     "databaseServiceObjectiveName": "Basic",
     "sqlServerName": "[format('sqlserver{0}', uniqueString(resourceGroup().id))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "sqlServer": {
       "type": "Microsoft.Sql/servers",
       "apiVersion": "2020-02-02-preview",
       "name": "[variables('sqlServerName')]",
@@ -48,7 +48,7 @@
         "version": "12.0"
       }
     },
-    {
+    "db": {
       "type": "Microsoft.Sql/servers/databases",
       "apiVersion": "2020-02-02-preview",
       "name": "[format('{0}/{1}', variables('sqlServerName'), variables('databaseName'))]",
@@ -61,10 +61,10 @@
         "collation": "[variables('databaseCollation')]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', variables('sqlServerName'))]"
+        "sqlServer"
       ]
     },
-    {
+    "tde": {
       "type": "Microsoft.Sql/servers/databases/transparentDataEncryption",
       "apiVersion": "2020-08-01-preview",
       "name": "[format('{0}/{1}/{2}', variables('sqlServerName'), variables('databaseName'), 'current')]",
@@ -72,9 +72,9 @@
         "state": "[parameters('transparentDataEncryption')]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers/databases', variables('sqlServerName'), variables('databaseName'))]",
-        "[resourceId('Microsoft.Sql/servers', variables('sqlServerName'))]"
+        "db",
+        "sqlServer"
       ]
     }
-  ]
+  }
 }

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "14716049199041538326"
+      "templateHash": "6069591695666350609"
     }
   },
   "parameters": {
@@ -20,8 +20,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "app1": {
       "type": "Microsoft.AppPlatform/Spring/apps",
       "apiVersion": "2020-07-01",
       "name": "[parameters('app1Name')]",
@@ -30,7 +30,7 @@
         "activeDeploymentName": "default"
       }
     },
-    {
+    "app2": {
       "type": "Microsoft.AppPlatform/Spring/apps",
       "apiVersion": "2020-07-01",
       "name": "[parameters('app2Name')]",
@@ -39,7 +39,7 @@
         "activeDeploymentName": "default"
       }
     },
-    {
+    "app3": {
       "type": "Microsoft.AppPlatform/Spring/apps",
       "apiVersion": "2020-07-01",
       "name": "[parameters('app3Name')]",
@@ -48,5 +48,5 @@
         "activeDeploymentName": "default"
       }
     }
-  ]
+  }
 }

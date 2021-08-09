@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "11435914357705837168"
+      "templateHash": "10247349102008798901"
     }
   },
   "parameters": {
@@ -55,8 +55,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "hp": {
       "type": "Microsoft.DesktopVirtualization/hostPools",
       "apiVersion": "2019-12-10-preview",
       "name": "[parameters('hostpoolName')]",
@@ -68,7 +68,7 @@
         "preferredAppGroupType": "[parameters('preferredAppGroupType')]"
       }
     },
-    {
+    "ag": {
       "type": "Microsoft.DesktopVirtualization/applicationGroups",
       "apiVersion": "2019-12-10-preview",
       "name": "[parameters('appgroupName')]",
@@ -79,10 +79,10 @@
         "hostPoolArmPath": "[resourceId('Microsoft.DesktopVirtualization/hostPools', parameters('hostpoolName'))]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.DesktopVirtualization/hostPools', parameters('hostpoolName'))]"
+        "hp"
       ]
     },
-    {
+    "ws": {
       "type": "Microsoft.DesktopVirtualization/workspaces",
       "apiVersion": "2019-12-10-preview",
       "name": "[parameters('workspaceName')]",
@@ -94,8 +94,8 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.DesktopVirtualization/applicationGroups', parameters('appgroupName'))]"
+        "ag"
       ]
     }
-  ]
+  }
 }

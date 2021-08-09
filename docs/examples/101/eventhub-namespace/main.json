@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "1891190626721479632"
+      "templateHash": "11591359100746371508"
     }
   },
   "parameters": {
@@ -27,8 +27,8 @@
     "eventHubNamespaceName": "[format('{0}ns', parameters('projectName'))]",
     "eventHubName": "[parameters('projectName')]"
   },
-  "resources": [
-    {
+  "resources": {
+    "eventHubNamespace": {
       "type": "Microsoft.EventHub/namespaces",
       "apiVersion": "2018-01-01-preview",
       "name": "[variables('eventHubNamespaceName')]",
@@ -43,7 +43,7 @@
         "maximumThroughputUnits": 0
       }
     },
-    {
+    "eventHub": {
       "type": "Microsoft.EventHub/namespaces/eventhubs",
       "apiVersion": "2017-04-01",
       "name": "[format('{0}/{1}', variables('eventHubNamespaceName'), variables('eventHubName'))]",
@@ -52,8 +52,8 @@
         "partitionCount": 1
       },
       "dependsOn": [
-        "[resourceId('Microsoft.EventHub/namespaces', variables('eventHubNamespaceName'))]"
+        "eventHubNamespace"
       ]
     }
-  ]
+  }
 }

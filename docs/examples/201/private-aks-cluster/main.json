@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "10839339689322770047"
+      "templateHash": "8586834172189219939"
     }
   },
   "parameters": {
@@ -493,8 +493,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "vnet": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "vnet",
@@ -536,7 +536,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "4573629760399744599"
+              "templateHash": "10116725474001756409"
             }
           },
           "parameters": {
@@ -605,8 +605,8 @@
             "vmSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('vmSubnetName'))]",
             "aksSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('aksSubnetName'))]"
           },
-          "resources": [
-            {
+          "resources": {
+            "vmSubnetNsg": {
               "type": "Microsoft.Network/networkSecurityGroups",
               "apiVersion": "2020-08-01",
               "name": "[variables('vmSubnetNsgName')]",
@@ -629,7 +629,7 @@
                 ]
               }
             },
-            {
+            "bastionSubnetNsg": {
               "type": "Microsoft.Network/networkSecurityGroups",
               "apiVersion": "2020-08-01",
               "name": "[variables('bastionSubnetNsgName')]",
@@ -739,7 +739,7 @@
                 ]
               }
             },
-            {
+            "virtualNetwork": {
               "type": "Microsoft.Network/virtualNetworks",
               "apiVersion": "2020-08-01",
               "name": "[parameters('virtualNetworkName')]",
@@ -784,11 +784,11 @@
                 "enableVmProtection": false
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('bastionSubnetNsgName'))]",
-                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('vmSubnetNsgName'))]"
+                "bastionSubnetNsg",
+                "vmSubnetNsg"
               ]
             }
-          ],
+          },
           "outputs": {
             "virtualNetworkResourceId": {
               "type": "string",
@@ -810,7 +810,7 @@
         }
       }
     },
-    {
+    "bastion": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "bastion",
@@ -824,7 +824,7 @@
             "value": "[parameters('bastionName')]"
           },
           "bastionSubnetId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'vnet'), '2019-10-01').outputs.bastionSubnetId.value]"
+            "value": "[reference('vnet').outputs.bastionSubnetId.value]"
           },
           "location": {
             "value": "[parameters('location')]"
@@ -837,7 +837,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "9608724785177199123"
+              "templateHash": "7609900497157442677"
             }
           },
           "parameters": {
@@ -865,8 +865,8 @@
           "variables": {
             "bastionPublicIpAddressName": "[format('{0}PublicIp', parameters('bastionHostName'))]"
           },
-          "resources": [
-            {
+          "resources": {
+            "bastionPublicIpAddress": {
               "type": "Microsoft.Network/publicIPAddresses",
               "apiVersion": "2020-08-01",
               "name": "[variables('bastionPublicIpAddressName')]",
@@ -878,7 +878,7 @@
                 "publicIPAllocationMethod": "Static"
               }
             },
-            {
+            "bastionHost": {
               "type": "Microsoft.Network/bastionHosts",
               "apiVersion": "2020-08-01",
               "name": "[parameters('bastionHostName')]",
@@ -899,17 +899,17 @@
                 ]
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastionPublicIpAddressName'))]"
+                "bastionPublicIpAddress"
               ]
             }
-          ]
+          }
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'vnet')]"
+        "vnet"
       ]
     },
-    {
+    "logAnalytics": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "log-analytics.bicep",
@@ -939,7 +939,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "957041648486849486"
+              "templateHash": "13521674423401942710"
             }
           },
           "parameters": {
@@ -978,8 +978,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "logAnalyticsWorkspace": {
               "type": "Microsoft.OperationalInsights/workspaces",
               "apiVersion": "2020-10-01",
               "name": "[parameters('logAnalyticsWorkspaceName')]",
@@ -991,7 +991,7 @@
                 "retentionInDays": "[parameters('logAnalyticsRetentionInDays')]"
               }
             }
-          ],
+          },
           "outputs": {
             "logAnalyticsWorkspaceId": {
               "type": "string",
@@ -1001,7 +1001,7 @@
         }
       }
     },
-    {
+    "jumpbox": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "jumpbox",
@@ -1060,13 +1060,13 @@
             "value": "[parameters('blobStorageAccountPrivateEndpointName')]"
           },
           "logAnalyticsWorkspaceId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'log-analytics.bicep'), '2019-10-01').outputs.logAnalyticsWorkspaceId.value]"
+            "value": "[reference('logAnalytics').outputs.logAnalyticsWorkspaceId.value]"
           },
           "virtualNetworkId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'vnet'), '2019-10-01').outputs.virtualNetworkResourceId.value]"
+            "value": "[reference('vnet').outputs.virtualNetworkResourceId.value]"
           },
           "vmSubnetId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'vnet'), '2019-10-01').outputs.vmSubnetId.value]"
+            "value": "[reference('vnet').outputs.vmSubnetId.value]"
           }
         },
         "template": {
@@ -1076,7 +1076,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "6673211936035085652"
+              "templateHash": "5954973803913299394"
             }
           },
           "parameters": {
@@ -1245,8 +1245,8 @@
             "virtualNetworkName": "[last(split(parameters('virtualNetworkId'), '/'))]",
             "logAnalyticsWorkspaceName": "[last(split(parameters('logAnalyticsWorkspaceId'), '/'))]"
           },
-          "resources": [
-            {
+          "resources": {
+            "blobStorageAccount": {
               "type": "Microsoft.Storage/storageAccounts",
               "apiVersion": "2021-01-01",
               "name": "[parameters('blobStorageAccountName')]",
@@ -1256,7 +1256,7 @@
               },
               "kind": "StorageV2"
             },
-            {
+            "vmNic": {
               "type": "Microsoft.Network/networkInterfaces",
               "apiVersion": "2020-08-01",
               "name": "[variables('vmNicName')]",
@@ -1275,7 +1275,7 @@
                 ]
               }
             },
-            {
+            "virtualMachines": {
               "type": "Microsoft.Compute/virtualMachines",
               "apiVersion": "2020-12-01",
               "name": "[parameters('vmName')]",
@@ -1333,16 +1333,16 @@
                 "diagnosticsProfile": {
                   "bootDiagnostics": {
                     "enabled": true,
-                    "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('blobStorageAccountName'))).primaryEndpoints.blob]"
+                    "storageUri": "[reference('blobStorageAccount').primaryEndpoints.blob]"
                   }
                 }
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('blobStorageAccountName'))]",
-                "[resourceId('Microsoft.Network/networkInterfaces', variables('vmNicName'))]"
+                "blobStorageAccount",
+                "vmNic"
               ]
             },
-            {
+            "omsAgentForLinux": {
               "type": "Microsoft.Compute/virtualMachines/extensions",
               "apiVersion": "2020-12-01",
               "name": "[format('{0}/{1}', parameters('vmName'), variables('omsAgentForLinuxName'))]",
@@ -1360,10 +1360,10 @@
                 }
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
+                "virtualMachines"
               ]
             },
-            {
+            "omsDependencyAgentForLinux": {
               "type": "Microsoft.Compute/virtualMachines/extensions",
               "apiVersion": "2020-12-01",
               "name": "[format('{0}/{1}', parameters('vmName'), variables('omsDependencyAgentForLinuxName'))]",
@@ -1375,16 +1375,16 @@
                 "autoUpgradeMinorVersion": true
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
+                "virtualMachines"
               ]
             },
-            {
+            "blobPrivateDnsZone": {
               "type": "Microsoft.Network/privateDnsZones",
               "apiVersion": "2020-06-01",
               "name": "[variables('blobPrivateDnsZoneName')]",
               "location": "global"
             },
-            {
+            "blobPrivateDnsZoneLinkToVirtualNetwork": {
               "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
               "apiVersion": "2020-06-01",
               "name": "[format('{0}/{1}', variables('blobPrivateDnsZoneName'), format('link_to_{0}', toLower(variables('virtualNetworkName'))))]",
@@ -1396,10 +1396,10 @@
                 }
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Network/privateDnsZones', variables('blobPrivateDnsZoneName'))]"
+                "blobPrivateDnsZone"
               ]
             },
-            {
+            "blobStorageAccountPrivateEndpoint": {
               "type": "Microsoft.Network/privateEndpoints",
               "apiVersion": "2020-08-01",
               "name": "[parameters('blobStorageAccountPrivateEndpointName')]",
@@ -1426,10 +1426,10 @@
                 ]
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('blobStorageAccountName'))]"
+                "blobStorageAccount"
               ]
             },
-            {
+            "blobPrivateDnsZoneGroup": {
               "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
               "apiVersion": "2020-08-01",
               "name": "[format('{0}/{1}', parameters('blobStorageAccountPrivateEndpointName'), format('{0}PrivateDnsZoneGroup', variables('blobStorageAccountPrivateEndpointGroupName')))]",
@@ -1444,19 +1444,19 @@
                 ]
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Network/privateDnsZones', variables('blobPrivateDnsZoneName'))]",
-                "[resourceId('Microsoft.Network/privateEndpoints', parameters('blobStorageAccountPrivateEndpointName'))]"
+                "blobPrivateDnsZone",
+                "blobStorageAccountPrivateEndpoint"
               ]
             }
-          ]
+          }
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'log-analytics.bicep')]",
-        "[resourceId('Microsoft.Resources/deployments', 'vnet')]"
+        "logAnalytics",
+        "vnet"
       ]
     },
-    {
+    "aks": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "aks",
@@ -1578,10 +1578,10 @@
             "value": "[parameters('nodePoolVmSize')]"
           },
           "virtualNetworkId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'vnet'), '2019-10-01').outputs.virtualNetworkResourceId.value]"
+            "value": "[reference('vnet').outputs.virtualNetworkResourceId.value]"
           },
           "logAnalyticsWorkspaceId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'log-analytics.bicep'), '2019-10-01').outputs.logAnalyticsWorkspaceId.value]"
+            "value": "[reference('logAnalytics').outputs.logAnalyticsWorkspaceId.value]"
           }
         },
         "template": {
@@ -1591,7 +1591,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "5882575949678654988"
+              "templateHash": "5643621276208490978"
             }
           },
           "parameters": {
@@ -1910,8 +1910,8 @@
             },
             "virtualNetworkName": "[last(split(parameters('virtualNetworkId'), '/'))]"
           },
-          "resources": [
-            {
+          "resources": {
+            "aksCluster": {
               "type": "Microsoft.ContainerService/managedClusters",
               "apiVersion": "2021-02-01",
               "name": "[parameters('aksClusterName')]",
@@ -1981,13 +1981,13 @@
                 }
               }
             }
-          ]
+          }
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'log-analytics.bicep')]",
-        "[resourceId('Microsoft.Resources/deployments', 'vnet')]"
+        "logAnalytics",
+        "vnet"
       ]
     }
-  ]
+  }
 }

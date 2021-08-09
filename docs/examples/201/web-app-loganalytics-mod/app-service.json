@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "11917327337287752626"
+      "templateHash": "3893447452017276074"
     }
   },
   "parameters": {
@@ -27,8 +27,8 @@
   "variables": {
     "webSiteName": "[toLower(format('wapp-{0}', parameters('appName')))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "appService": {
       "type": "Microsoft.Web/sites",
       "apiVersion": "2020-06-01",
       "name": "[variables('webSiteName')]",
@@ -48,7 +48,7 @@
         }
       }
     },
-    {
+    "appServiceLogging": {
       "type": "Microsoft.Web/sites/config",
       "apiVersion": "2020-06-01",
       "name": "[format('{0}/logs', variables('webSiteName'))]",
@@ -72,10 +72,10 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', variables('webSiteName'))]"
+        "appService"
       ]
     },
-    {
+    "appServiceAppSettings": {
       "type": "Microsoft.Web/sites/config",
       "apiVersion": "2020-06-01",
       "name": "[format('{0}/appsettings', variables('webSiteName'))]",
@@ -83,16 +83,16 @@
         "APPINSIGHTS_INSTRUMENTATIONKEY": "[parameters('APPINSIGHTS_INSTRUMENTATIONKEY')]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', variables('webSiteName'))]"
+        "appService"
       ]
     },
-    {
+    "appServiceSiteExtension": {
       "type": "Microsoft.Web/sites/siteextensions",
       "apiVersion": "2020-06-01",
       "name": "[format('{0}/Microsoft.ApplicationInsights.AzureWebsites', variables('webSiteName'))]",
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', variables('webSiteName'))]"
+        "appService"
       ]
     }
-  ]
+  }
 }

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "4055350238960821924"
+      "templateHash": "6806143706959289498"
     }
   },
   "parameters": {
@@ -33,8 +33,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "virtualNetwork": {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2020-06-01",
       "name": "[parameters('virtualNetworkName')]",
@@ -47,7 +47,7 @@
         }
       }
     },
-    {
+    "subNet": {
       "type": "Microsoft.Network/virtualNetworks/subnets",
       "apiVersion": "2020-06-01",
       "name": "[format('{0}/default', parameters('virtualNetworkName'))]",
@@ -56,10 +56,10 @@
         "privateEndpointNetworkPolicies": "Disabled"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
+        "virtualNetwork"
       ]
     },
-    {
+    "databaseAccount": {
       "type": "Microsoft.DocumentDB/databaseAccounts",
       "apiVersion": "2020-06-01-preview",
       "name": "[parameters('accountName')]",
@@ -83,7 +83,7 @@
         "publicNetworkAccess": "[parameters('publicNetworkAccess')]"
       }
     },
-    {
+    "privateEndpoint": {
       "type": "Microsoft.Network/privateEndpoints",
       "apiVersion": "2020-06-01",
       "name": "[parameters('privateEndpointName')]",
@@ -105,9 +105,9 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('accountName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks/subnets', split(format('{0}/default', parameters('virtualNetworkName')), '/')[0], split(format('{0}/default', parameters('virtualNetworkName')), '/')[1])]"
+        "databaseAccount",
+        "subNet"
       ]
     }
-  ]
+  }
 }

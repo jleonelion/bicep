@@ -19,7 +19,7 @@
     "len": "[length(variables('find'))]",
     "substr": "[substring(variables('find'), variables('index'), sub(variables('len'), variables('index')))]"
   },
-  "resources": [],
+  "resources": {},
   "outputs": {
     "arrayFromString": {
       "type": "array",

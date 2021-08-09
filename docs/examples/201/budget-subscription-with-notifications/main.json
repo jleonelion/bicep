@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "15340131888003421698"
+      "templateHash": "17235859594738679057"
     }
   },
   "parameters": {
@@ -67,8 +67,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "budget": {
       "type": "Microsoft.Consumption/budgets",
       "apiVersion": "2019-10-01",
       "name": "[parameters('name')]",
@@ -83,5 +83,5 @@
         "notifications": "[if(not(empty(parameters('notifications'))), parameters('notifications'), null())]"
       }
     }
-  ]
+  }
 }

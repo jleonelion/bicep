@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "1502977987485717788"
+      "templateHash": "7095047938565692241"
     }
   },
   "parameters": {
@@ -17,8 +17,8 @@
   "variables": {
     "roleName": "Bicep Custom Role demo"
   },
-  "resources": [
-    {
+  "resources": {
+    "definition": {
       "type": "Microsoft.Authorization/roleDefinitions",
       "apiVersion": "2018-01-01-preview",
       "name": "[guid(variables('roleName'))]",
@@ -37,7 +37,7 @@
         ]
       }
     },
-    {
+    "assignment": {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2020-04-01-preview",
       "name": "[guid(variables('roleName'), parameters('principalId'), subscription().subscriptionId)]",
@@ -46,8 +46,8 @@
         "principalId": "[parameters('principalId')]"
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', guid(variables('roleName')))]"
+        "definition"
       ]
     }
-  ]
+  }
 }

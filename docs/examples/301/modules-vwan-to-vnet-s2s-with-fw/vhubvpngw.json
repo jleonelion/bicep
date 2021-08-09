@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "10433069750951100331"
+      "templateHash": "3981792547306766732"
     }
   },
   "parameters": {
@@ -30,8 +30,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "hubvpngw": {
       "type": "Microsoft.Network/vpnGateways",
       "apiVersion": "2020-06-01",
       "name": "[parameters('hubvpngwname')]",
@@ -45,7 +45,7 @@
         }
       }
     }
-  ],
+  },
   "outputs": {
     "id": {
       "type": "string",
@@ -57,15 +57,15 @@
     },
     "gwpublicip": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Network/vpnGateways', parameters('hubvpngwname'))).ipConfigurations[0].publicIpAddress]"
+      "value": "[reference('hubvpngw').ipConfigurations[0].publicIpAddress]"
     },
     "gwprivateip": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Network/vpnGateways', parameters('hubvpngwname'))).ipConfigurations[0].privateIpAddress]"
+      "value": "[reference('hubvpngw').ipConfigurations[0].privateIpAddress]"
     },
     "bgpasn": {
       "type": "int",
-      "value": "[reference(resourceId('Microsoft.Network/vpnGateways', parameters('hubvpngwname'))).bgpSettings.asn]"
+      "value": "[reference('hubvpngw').bgpSettings.asn]"
     }
   }
 }

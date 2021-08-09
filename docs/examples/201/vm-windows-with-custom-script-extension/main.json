@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "14618145107924036487"
+      "templateHash": "16352694725415998198"
     }
   },
   "parameters": {
@@ -173,8 +173,8 @@
       "commandToExecute": "[format('powershell -ExecutionPolicy Unrestricted -File ./{0}', last(split(parameters('virtualMachineExtensionCustomScriptUri'), '/')))]"
     }
   },
-  "resources": [
-    {
+  "resources": {
+    "st": {
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2019-06-01",
       "name": "[variables('storageAccount').name]",
@@ -184,7 +184,7 @@
         "name": "Standard_LRS"
       }
     },
-    {
+    "pip": {
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "2020-06-01",
       "name": "[variables('publicIp').name]",
@@ -196,7 +196,7 @@
         }
       }
     },
-    {
+    "nsg": {
       "type": "Microsoft.Network/networkSecurityGroups",
       "apiVersion": "2020-06-01",
       "name": "[variables('networkSecurityGroup').name]",
@@ -205,7 +205,7 @@
         "securityRules": "[variables('networkSecurityGroup').securityRules]"
       }
     },
-    {
+    "vnet": {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2020-06-01",
       "name": "[variables('virtualNetwork').name]",
@@ -217,10 +217,10 @@
         "subnets": "[variables('virtualNetwork').subnets]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroup').name)]"
+        "nsg"
       ]
     },
-    {
+    "nic": {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2020-06-01",
       "name": "[variables('networkInterface').name]",
@@ -229,11 +229,11 @@
         "ipConfigurations": "[variables('networkInterface').ipConfigurations]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIp').name)]",
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetwork').name)]"
+        "pip",
+        "vnet"
       ]
     },
-    {
+    "vm": {
       "type": "Microsoft.Compute/virtualMachines",
       "apiVersion": "2020-06-01",
       "name": "[variables('virtualMachine').name]",
@@ -267,16 +267,16 @@
         "diagnosticsProfile": {
           "bootDiagnostics": {
             "enabled": true,
-            "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccount').name)).primaryEndpoints.blob]"
+            "storageUri": "[reference('st').primaryEndpoints.blob]"
           }
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterface').name)]",
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccount').name)]"
+        "nic",
+        "st"
       ]
     },
-    {
+    "vmext": {
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "apiVersion": "2020-06-01",
       "name": "[variables('virtualMachineExtensionCustomScript').name]",
@@ -293,8 +293,8 @@
         "protectedSettings": {}
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('virtualMachine').name)]"
+        "vm"
       ]
     }
-  ]
+  }
 }

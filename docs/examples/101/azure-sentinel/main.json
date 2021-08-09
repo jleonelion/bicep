@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "16080991071473909590"
+      "templateHash": "14962557040619793209"
     }
   },
   "parameters": {
@@ -18,8 +18,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "workspace": {
       "type": "Microsoft.OperationalInsights/workspaces",
       "apiVersion": "2020-08-01",
       "name": "[parameters('workspaceName')]",
@@ -31,7 +31,7 @@
         }
       }
     },
-    {
+    "solution": {
       "type": "Microsoft.OperationsManagement/solutions",
       "apiVersion": "2015-11-01-preview",
       "name": "[format('SecurityInsights({0})', parameters('workspaceName'))]",
@@ -46,8 +46,8 @@
         "promotionCode": ""
       },
       "dependsOn": [
-        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]"
+        "workspace"
       ]
     }
-  ]
+  }
 }

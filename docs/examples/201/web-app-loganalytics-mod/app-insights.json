@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "15097235235814757526"
+      "templateHash": "18420984484177461186"
     }
   },
   "parameters": {
@@ -24,8 +24,8 @@
   "variables": {
     "appInsightName": "[toLower(format('appi-{0}', parameters('appName')))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "appInsights": {
       "type": "Microsoft.Insights/components",
       "apiVersion": "2020-02-02-preview",
       "name": "[variables('appInsightName')]",
@@ -40,11 +40,11 @@
         "WorkspaceResourceId": "[parameters('logAnalaticsWorkspaceResourceID')]"
       }
     }
-  ],
+  },
   "outputs": {
     "APPINSIGHTS_INSTRUMENTATIONKEY": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightName'))).InstrumentationKey]"
+      "value": "[reference('appInsights').InstrumentationKey]"
     }
   }
 }

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "13031907000558588020"
+      "templateHash": "15500686165440655600"
     }
   },
   "parameters": {
@@ -27,8 +27,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "virtualNetwork": {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2020-06-01",
       "name": "[parameters('virtualNetworkName')]",
@@ -41,7 +41,7 @@
         }
       }
     },
-    {
+    "subNet": {
       "type": "Microsoft.Network/virtualNetworks/subnets",
       "apiVersion": "2020-06-01",
       "name": "[parameters('subnetName')]",
@@ -49,7 +49,7 @@
         "addressPrefix": "10.0.1.0/25"
       }
     },
-    {
+    "ase": {
       "type": "Microsoft.Web/hostingEnvironments",
       "apiVersion": "2020-06-01",
       "name": "[parameters('aseName')]",
@@ -64,8 +64,8 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks/subnets', split(parameters('subnetName'), '/')[0], split(parameters('subnetName'), '/')[1])]"
+        "subNet"
       ]
     }
-  ]
+  }
 }

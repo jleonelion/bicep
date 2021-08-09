@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "12577151766898505388"
+      "templateHash": "13583339327247119491"
     }
   },
   "parameters": {
@@ -75,8 +75,8 @@
     "storageAccountName": "[format('{0}azfunctions', uniqueString(resourceGroup().id))]",
     "functionWorkerRuntime": "[parameters('runtime')]"
   },
-  "resources": [
-    {
+  "resources": {
+    "virtualNetwork": {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2020-06-01",
       "name": "[parameters('vnetName')]",
@@ -105,7 +105,7 @@
         ]
       }
     },
-    {
+    "storageAccount": {
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2021-04-01",
       "name": "[variables('storageAccountName')]",
@@ -115,7 +115,7 @@
       },
       "kind": "StorageV2"
     },
-    {
+    "appInsights": {
       "type": "Microsoft.Insights/components",
       "apiVersion": "2018-05-01-preview",
       "name": "[variables('functionAppName')]",
@@ -125,7 +125,7 @@
         "Application_Type": "web"
       }
     },
-    {
+    "serverFarm": {
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2020-06-01",
       "name": "[variables('hostingPlanName')]",
@@ -139,7 +139,7 @@
         "maximumElasticWorkerCount": 20
       }
     },
-    {
+    "function": {
       "type": "Microsoft.Web/sites",
       "apiVersion": "2020-06-01",
       "name": "[variables('functionAppName')]",
@@ -151,11 +151,11 @@
           "appSettings": [
             {
               "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-              "value": "[reference(resourceId('Microsoft.Insights/components', variables('functionAppName'))).InstrumentationKey]"
+              "value": "[reference('appInsights').InstrumentationKey]"
             },
             {
               "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
-              "value": "[format('InstrumentationKey={0}', reference(resourceId('Microsoft.Insights/components', variables('functionAppName'))).InstrumentationKey)]"
+              "value": "[format('InstrumentationKey={0}', reference('appInsights').InstrumentationKey)]"
             },
             {
               "name": "AzureWebJobsStorage",
@@ -181,13 +181,13 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Insights/components', variables('functionAppName'))]",
-        "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
+        "appInsights",
+        "serverFarm",
+        "storageAccount",
+        "virtualNetwork"
       ]
     },
-    {
+    "networkConfig": {
       "type": "Microsoft.Web/sites/networkConfig",
       "apiVersion": "2020-06-01",
       "name": "[format('{0}/{1}', variables('functionAppName'), 'virtualNetwork')]",
@@ -196,9 +196,9 @@
         "swiftSupported": true
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
+        "function",
+        "virtualNetwork"
       ]
     }
-  ]
+  }
 }

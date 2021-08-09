@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "13593744847859493909"
+      "templateHash": "4624788664325854737"
     }
   },
   "parameters": {
@@ -93,8 +93,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "vault": {
       "type": "Microsoft.KeyVault/vaults",
       "apiVersion": "2019-09-01",
       "name": "[parameters('keyVaultName')]",
@@ -127,7 +127,7 @@
         }
       }
     },
-    {
+    "secrets": {
       "copy": {
         "name": "secrets",
         "count": "[length(parameters('secretsObject').secrets)]"
@@ -139,8 +139,8 @@
         "value": "[parameters('secretsObject').secrets[copyIndex()].secretValue]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]"
+        "vault"
       ]
     }
-  ]
+  }
 }

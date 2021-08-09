@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "5064640466393476653"
+      "templateHash": "10220477949545074546"
     }
   },
   "parameters": {
@@ -23,8 +23,8 @@
     "vmExtensionTypeHandlerVersion": "1.0",
     "dcrAssociationName": "association1"
   },
-  "resources": [
-    {
+  "resources": {
+    "deployAzureMonitorAgentWindowsDCR": {
       "type": "Microsoft.Authorization/policyDefinitions",
       "apiVersion": "2020-09-01",
       "name": "deployAzureMonitorAgentWindowsDCR",
@@ -312,7 +312,7 @@
         }
       }
     },
-    {
+    "monitoringGovernance": {
       "type": "Microsoft.Authorization/policySetDefinitions",
       "apiVersion": "2020-09-01",
       "name": "monitoringGovernance",
@@ -334,10 +334,10 @@
         ]
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', 'deployAzureMonitorAgentWindowsDCR')]"
+        "deployAzureMonitorAgentWindowsDCR"
       ]
     }
-  ],
+  },
   "outputs": {
     "monitoringGovernanceId": {
       "type": "string",

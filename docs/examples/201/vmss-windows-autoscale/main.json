@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "15303513457722336163"
+      "templateHash": "5178640933771800684"
     }
   },
   "parameters": {
@@ -68,8 +68,8 @@
     },
     "imageReference": "[variables('osType')]"
   },
-  "resources": [
-    {
+  "resources": {
+    "virtualNetwork": {
       "type": "Microsoft.Network/virtualnetworks",
       "apiVersion": "2015-05-01-preview",
       "name": "[variables('virtualNetworkName')]",
@@ -90,7 +90,7 @@
         ]
       }
     },
-    {
+    "publicIP": {
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "2020-06-01",
       "name": "[variables('publicIPAddressName')]",
@@ -102,7 +102,7 @@
         }
       }
     },
-    {
+    "loadBalancer": {
       "type": "Microsoft.Network/loadBalancers",
       "apiVersion": "2020-06-01",
       "name": "[variables('loadBalancerName')]",
@@ -139,10 +139,10 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
+        "publicIP"
       ]
     },
-    {
+    "vmss": {
       "type": "Microsoft.Compute/virtualMachineScaleSets",
       "apiVersion": "2020-06-01",
       "name": "[parameters('vmssName')]",
@@ -203,11 +203,11 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName'))]",
-        "[resourceId('Microsoft.Network/virtualnetworks', variables('virtualNetworkName'))]"
+        "loadBalancer",
+        "virtualNetwork"
       ]
     },
-    {
+    "autoScaleSettings": {
       "type": "Microsoft.Insights/autoscalesettings",
       "apiVersion": "2015-04-01",
       "name": "cpuautoscale",
@@ -268,8 +268,8 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('vmssName'))]"
+        "vmss"
       ]
     }
-  ]
+  }
 }

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "11596780352137584181"
+      "templateHash": "8154220870745279179"
     }
   },
   "parameters": {
@@ -20,8 +20,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "workSpace": {
       "type": "Microsoft.DesktopVirtualization/workspaces",
       "apiVersion": "2019-12-10-preview",
       "name": "[parameters('workSpaceName')]",
@@ -30,5 +30,5 @@
         "applicationGroupReferences": "[parameters('applicationGroupReferencesArr')]"
       }
     }
-  ]
+  }
 }

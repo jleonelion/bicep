@@ -5,16 +5,16 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "3531722014132222615"
+      "templateHash": "3803235504229871210"
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "rg": {
       "type": "Microsoft.Resources/resourceGroups",
       "apiVersion": "2019-05-01",
       "name": "rg-bicep",
       "location": "eastus"
     }
-  ]
+  }
 }

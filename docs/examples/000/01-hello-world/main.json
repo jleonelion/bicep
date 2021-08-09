@@ -17,7 +17,7 @@
   "variables": {
     "hello": "Hello World! - Hi"
   },
-  "resources": [],
+  "resources": {},
   "outputs": {
     "helloWorld": {
       "type": "string",

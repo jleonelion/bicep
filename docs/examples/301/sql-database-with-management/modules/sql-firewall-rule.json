@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "14005243826429444249"
+      "templateHash": "7089802473118549098"
     }
   },
   "parameters": {
@@ -23,8 +23,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "firewallRule": {
       "type": "Microsoft.Sql/servers/firewallRules",
       "apiVersion": "2021-02-01-preview",
       "name": "[format('{0}/{1}', parameters('sqlServerName'), parameters('sqlFirewallRule').name)]",
@@ -33,5 +33,5 @@
         "endIpAddress": "[parameters('sqlFirewallRule').endIpAddress]"
       }
     }
-  ]
+  }
 }

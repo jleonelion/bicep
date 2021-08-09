@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "1090700724652915602"
+      "templateHash": "4951135879145442982"
     }
   },
   "parameters": {
@@ -37,8 +37,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "config": {
       "type": "Microsoft.AppConfiguration/configurationStores",
       "apiVersion": "2020-07-01-preview",
       "name": "[parameters('configStoreName')]",
@@ -47,7 +47,7 @@
         "name": "Standard"
       }
     },
-    {
+    "key1": {
       "type": "Microsoft.AppConfiguration/configurationStores/keyValues",
       "apiVersion": "2020-07-01-preview",
       "name": "[format('{0}/{1}', parameters('configStoreName'), parameters('keyValueNames')[0])]",
@@ -56,10 +56,10 @@
         "contentType": "[parameters('contentType')]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.AppConfiguration/configurationStores', parameters('configStoreName'))]"
+        "config"
       ]
     },
-    {
+    "key2": {
       "type": "Microsoft.AppConfiguration/configurationStores/keyValues",
       "apiVersion": "2020-07-01-preview",
       "name": "[format('{0}/{1}', parameters('configStoreName'), parameters('keyValueNames')[1])]",
@@ -68,14 +68,14 @@
         "contentType": "[parameters('contentType')]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.AppConfiguration/configurationStores', parameters('configStoreName'))]"
+        "config"
       ]
     }
-  ],
+  },
   "outputs": {
     "keys": {
       "type": "object",
-      "value": "[reference(resourceId('Microsoft.AppConfiguration/configurationStores/keyValues', split(format('{0}/{1}', parameters('configStoreName'), parameters('keyValueNames')[0]), '/')[0], split(format('{0}/{1}', parameters('configStoreName'), parameters('keyValueNames')[0]), '/')[1]), '2020-07-01-preview', 'full')]"
+      "value": "[reference('key1', '2020-07-01-preview', 'full')]"
     }
   }
 }

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "4573629760399744599"
+      "templateHash": "10116725474001756409"
     }
   },
   "parameters": {
@@ -74,8 +74,8 @@
     "vmSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('vmSubnetName'))]",
     "aksSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('aksSubnetName'))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "vmSubnetNsg": {
       "type": "Microsoft.Network/networkSecurityGroups",
       "apiVersion": "2020-08-01",
       "name": "[variables('vmSubnetNsgName')]",
@@ -98,7 +98,7 @@
         ]
       }
     },
-    {
+    "bastionSubnetNsg": {
       "type": "Microsoft.Network/networkSecurityGroups",
       "apiVersion": "2020-08-01",
       "name": "[variables('bastionSubnetNsgName')]",
@@ -208,7 +208,7 @@
         ]
       }
     },
-    {
+    "virtualNetwork": {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2020-08-01",
       "name": "[parameters('virtualNetworkName')]",
@@ -253,11 +253,11 @@
         "enableVmProtection": false
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('bastionSubnetNsgName'))]",
-        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('vmSubnetNsgName'))]"
+        "bastionSubnetNsg",
+        "vmSubnetNsg"
       ]
     }
-  ],
+  },
   "outputs": {
     "virtualNetworkResourceId": {
       "type": "string",

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "17785568548409074386"
+      "templateHash": "5253314466804318099"
     }
   },
   "parameters": {
@@ -35,8 +35,8 @@
       }
     ]
   },
-  "resources": [
-    {
+  "resources": {
+    "apimUser": {
       "copy": {
         "name": "apimUser",
         "count": "[length(variables('usersSet'))]"
@@ -52,5 +52,5 @@
         "note": "[variables('usersSet')[copyIndex()].notes]"
       }
     }
-  ]
+  }
 }

@@ -15,7 +15,7 @@
     "jsonString2": "[[\"four\",\"five\",\"six\"]",
     "jsonArray2": "[json(variables('jsonString2'))]"
   },
-  "resources": [],
+  "resources": {},
   "outputs": {
     "jsonArray": {
       "type": "array",

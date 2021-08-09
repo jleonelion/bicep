@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "14633856064052260422"
+      "templateHash": "7788388639991191682"
     }
   },
   "parameters": {
@@ -24,8 +24,8 @@
     "routingRuleName": "routingRule",
     "backendPoolName": "backendPool"
   },
-  "resources": [
-    {
+  "resources": {
+    "frontDoor": {
       "type": "Microsoft.Network/frontDoors",
       "apiVersion": "2020-01-01",
       "name": "[parameters('frontDoorName')]",
@@ -111,5 +111,5 @@
         ]
       }
     }
-  ]
+  }
 }

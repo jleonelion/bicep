@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "3463049745789072361"
+      "templateHash": "17397314838050089735"
     }
   },
   "parameters": {
@@ -41,8 +41,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "namespace": {
       "type": "Microsoft.EventHub/namespaces",
       "apiVersion": "2017-04-01",
       "name": "[parameters('namespaceName')]",
@@ -54,23 +54,23 @@
       },
       "properties": {}
     },
-    {
+    "eventHub": {
       "type": "Microsoft.EventHub/namespaces/eventhubs",
       "apiVersion": "2017-04-01",
       "name": "[format('{0}/{1}', parameters('namespaceName'), parameters('eventHubName'))]",
       "properties": {},
       "dependsOn": [
-        "[resourceId('Microsoft.EventHub/namespaces', parameters('namespaceName'))]"
+        "namespace"
       ]
     },
-    {
+    "consumerGroup": {
       "type": "Microsoft.EventHub/namespaces/eventhubs/consumergroups",
       "apiVersion": "2017-04-01",
       "name": "[format('{0}/{1}', format('{0}/{1}', parameters('namespaceName'), parameters('eventHubName')), parameters('consumerGroupName'))]",
       "properties": {},
       "dependsOn": [
-        "[resourceId('Microsoft.EventHub/namespaces/eventhubs', split(format('{0}/{1}', parameters('namespaceName'), parameters('eventHubName')), '/')[0], split(format('{0}/{1}', parameters('namespaceName'), parameters('eventHubName')), '/')[1])]"
+        "eventHub"
       ]
     }
-  ]
+  }
 }

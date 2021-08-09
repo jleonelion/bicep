@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "8518948478731971920"
+      "templateHash": "16394341267893974345"
     }
   },
   "parameters": {
@@ -69,8 +69,8 @@
     "policyDefCategory": "Custom",
     "policySource": "Bicep"
   },
-  "resources": [
-    {
+  "resources": {
+    "bicepExampleDINEpolicy": {
       "type": "Microsoft.Authorization/policyDefinitions",
       "apiVersion": "2020-09-01",
       "name": "bicepExampleDINEpolicy",
@@ -268,7 +268,7 @@
         }
       }
     },
-    {
+    "bicepExampleInitiative": {
       "type": "Microsoft.Authorization/policySetDefinitions",
       "apiVersion": "2020-09-01",
       "name": "bicepExampleInitiative",
@@ -290,10 +290,10 @@
         ]
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', 'bicepExampleDINEpolicy')]"
+        "bicepExampleDINEpolicy"
       ]
     }
-  ],
+  },
   "outputs": {
     "bicepExampleInitiativeId": {
       "type": "string",

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "14703761931839700056"
+      "templateHash": "15812378268296744055"
     }
   },
   "parameters": {
@@ -28,8 +28,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "vnet": {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2019-12-01",
       "name": "[parameters('vnetName')]",
@@ -51,11 +51,11 @@
         ]
       }
     }
-  ],
+  },
   "outputs": {
     "subnetId": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))).subnets[0].id]"
+      "value": "[reference('vnet').subnets[0].id]"
     },
     "vnetId": {
       "type": "string",

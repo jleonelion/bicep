@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "4413852781831650034"
+      "templateHash": "2739496555191546009"
     }
   },
   "parameters": {
@@ -48,8 +48,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "vpnsite": {
       "type": "Microsoft.Network/vpnSites",
       "apiVersion": "2020-06-01",
       "name": "[parameters('vpnsitename')]",
@@ -74,7 +74,7 @@
         }
       }
     }
-  ],
+  },
   "outputs": {
     "id": {
       "type": "string",

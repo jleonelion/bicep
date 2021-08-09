@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "8343523369994005156"
+      "templateHash": "17343871014188633234"
     }
   },
   "parameters": {
@@ -77,8 +77,8 @@
     "deployUsers": true,
     "deployNameValuePairs": true
   },
-  "resources": [
-    {
+  "resources": {
+    "applicationInsights": {
       "type": "Microsoft.Insights/components",
       "apiVersion": "2015-05-01",
       "name": "[parameters('appInsightsName')]",
@@ -89,7 +89,7 @@
         "Application_Type": "web"
       }
     },
-    {
+    "apiManagement": {
       "type": "Microsoft.ApiManagement/service",
       "apiVersion": "2019-01-01",
       "name": "[parameters('apimInstanceName')]",
@@ -104,7 +104,7 @@
         "publisherName": "[parameters('publisherName')]"
       }
     },
-    {
+    "apiManagementLogger": {
       "type": "Microsoft.ApiManagement/service/loggers",
       "apiVersion": "2019-01-01",
       "name": "[format('{0}/{1}', parameters('apimInstanceName'), parameters('appInsightsName'))]",
@@ -112,15 +112,15 @@
         "loggerType": "applicationInsights",
         "description": "Logger resources to APIM",
         "credentials": {
-          "instrumentationKey": "[reference(resourceId('Microsoft.Insights/components', parameters('appInsightsName'))).InstrumentationKey]"
+          "instrumentationKey": "[reference('applicationInsights').InstrumentationKey]"
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.ApiManagement/service', parameters('apimInstanceName'))]",
-        "[resourceId('Microsoft.Insights/components', parameters('appInsightsName'))]"
+        "apiManagement",
+        "applicationInsights"
       ]
     },
-    {
+    "apimInstanceDiagnostics": {
       "type": "Microsoft.ApiManagement/service/diagnostics",
       "apiVersion": "2020-06-01-preview",
       "name": "[format('{0}/{1}', parameters('apimInstanceName'), 'applicationinsights')]",
@@ -134,11 +134,11 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.ApiManagement/service', parameters('apimInstanceName'))]",
-        "[resourceId('Microsoft.ApiManagement/service/loggers', parameters('apimInstanceName'), parameters('appInsightsName'))]"
+        "apiManagement",
+        "apiManagementLogger"
       ]
     },
-    {
+    "apimGroups": {
       "condition": "[variables('deployGroups')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
@@ -160,7 +160,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "14706570379215138555"
+              "templateHash": "8740345562791280005"
             }
           },
           "parameters": {
@@ -184,8 +184,8 @@
               }
             ]
           },
-          "resources": [
-            {
+          "resources": {
+            "apimGroup": {
               "copy": {
                 "name": "apimGroup",
                 "count": "[length(variables('groupsSet'))]"
@@ -198,7 +198,7 @@
                 "description": "[variables('groupsSet')[copyIndex()].groupDescription]"
               }
             }
-          ],
+          },
           "outputs": {
             "apimGroups": {
               "type": "array",
@@ -214,10 +214,10 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.ApiManagement/service', parameters('apimInstanceName'))]"
+        "apiManagement"
       ]
     },
-    {
+    "apimUsers": {
       "condition": "[variables('deployUsers')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
@@ -239,7 +239,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "17785568548409074386"
+              "templateHash": "5253314466804318099"
             }
           },
           "parameters": {
@@ -269,8 +269,8 @@
               }
             ]
           },
-          "resources": [
-            {
+          "resources": {
+            "apimUser": {
               "copy": {
                 "name": "apimUser",
                 "count": "[length(variables('usersSet'))]"
@@ -286,14 +286,14 @@
                 "note": "[variables('usersSet')[copyIndex()].notes]"
               }
             }
-          ]
+          }
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.ApiManagement/service', parameters('apimInstanceName'))]"
+        "apiManagement"
       ]
     },
-    {
+    "apimNVPairs": {
       "condition": "[variables('deployNameValuePairs')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
@@ -315,7 +315,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "2914496037611283856"
+              "templateHash": "10766903069788110759"
             }
           },
           "parameters": {
@@ -346,8 +346,8 @@
               }
             ]
           },
-          "resources": [
-            {
+          "resources": {
+            "apiManagementNVPair": {
               "copy": {
                 "name": "apiManagementNVPair",
                 "count": "[length(variables('apimNameValueSet'))]"
@@ -362,7 +362,7 @@
                 "tags": "[variables('apimNameValueSet')[copyIndex()].tags]"
               }
             }
-          ],
+          },
           "outputs": {
             "apimNameValues": {
               "type": "array",
@@ -378,18 +378,18 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.ApiManagement/service', parameters('apimInstanceName'))]"
+        "apiManagement"
       ]
     }
-  ],
+  },
   "outputs": {
     "appInsightsInstrumentationKey": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Insights/components', parameters('appInsightsName'))).InstrumentationKey]"
+      "value": "[reference('applicationInsights').InstrumentationKey]"
     },
     "apimURL": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.ApiManagement/service', parameters('apimInstanceName'))).portalUrl]"
+      "value": "[reference('apiManagement').portalUrl]"
     }
   }
 }

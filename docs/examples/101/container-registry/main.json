@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "8783196267296526557"
+      "templateHash": "3792112430342984282"
     }
   },
   "parameters": {
@@ -45,8 +45,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "acr": {
       "type": "Microsoft.ContainerRegistry/registries",
       "apiVersion": "2019-12-01-preview",
       "name": "[parameters('acrName')]",
@@ -62,11 +62,11 @@
         "adminUserEnabled": "[parameters('acrAdminUserEnabled')]"
       }
     }
-  ],
+  },
   "outputs": {
     "acrLoginServer": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.ContainerRegistry/registries', parameters('acrName'))).loginServer]"
+      "value": "[reference('acr').loginServer]"
     }
   }
 }

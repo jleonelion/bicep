@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "4952456891125984913"
+      "templateHash": "64493874931227943"
     }
   },
   "parameters": {
@@ -53,8 +53,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "apiManagement": {
       "type": "Microsoft.ApiManagement/service",
       "apiVersion": "2020-12-01",
       "name": "[format('apiservice{0}', uniqueString(resourceGroup().id))]",
@@ -71,5 +71,5 @@
         "type": "SystemAssigned"
       }
     }
-  ]
+  }
 }

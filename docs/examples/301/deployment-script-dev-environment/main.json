@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "1628028490283910307"
+      "templateHash": "2353873584520636173"
     }
   },
   "parameters": {
@@ -41,8 +41,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "storage": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "[format('{0}-deploy', parameters('storageName'))]",
@@ -66,7 +66,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "10072553779848923110"
+              "templateHash": "18399810240855769347"
             }
           },
           "parameters": {
@@ -116,8 +116,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "storage": {
               "type": "Microsoft.Storage/storageAccounts",
               "apiVersion": "2019-06-01",
               "name": "[parameters('name')]",
@@ -130,15 +130,15 @@
                 "accessTier": "[parameters('accessTier')]"
               }
             },
-            {
+            "fileshare": {
               "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
               "apiVersion": "2019-06-01",
               "name": "[format('{0}/default/{1}', parameters('name'), parameters('fileShareName'))]",
               "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('name'))]"
+                "storage"
               ]
             }
-          ],
+          },
           "outputs": {
             "resourceId": {
               "type": "string",
@@ -156,7 +156,7 @@
         }
       }
     },
-    {
+    "container": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "[format('{0}-deploy', parameters('containerName'))]",
@@ -173,13 +173,13 @@
             "value": "[parameters('location')]"
           },
           "storageName": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('{0}-deploy', parameters('storageName'))), '2019-10-01').outputs.storageName.value]"
+            "value": "[reference('storage').outputs.storageName.value]"
           },
           "storageId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('{0}-deploy', parameters('storageName'))), '2019-10-01').outputs.resourceId.value]"
+            "value": "[reference('storage').outputs.resourceId.value]"
           },
           "fileShareName": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('{0}-deploy', parameters('storageName'))), '2019-10-01').outputs.fileShareName.value]"
+            "value": "[reference('storage').outputs.fileShareName.value]"
           },
           "type": {
             "value": "[parameters('type')]"
@@ -195,7 +195,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "6673808017610235563"
+              "templateHash": "14799547524107377720"
             }
           },
           "parameters": {
@@ -264,8 +264,8 @@
               "[format('echo hello; sleep {0}', parameters('sessionTime'))]"
             ]
           },
-          "resources": [
-            {
+          "resources": {
+            "containerGroupName": {
               "type": "Microsoft.ContainerInstance/containerGroups",
               "apiVersion": "2019-12-01",
               "name": "[parameters('name')]",
@@ -312,12 +312,12 @@
                 ]
               }
             }
-          ]
+          }
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', format('{0}-deploy', parameters('storageName')))]"
+        "storage"
       ]
     }
-  ]
+  }
 }

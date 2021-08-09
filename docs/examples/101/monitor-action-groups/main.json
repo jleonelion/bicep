@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "18418944260197435155"
+      "templateHash": "6683864230394050006"
     }
   },
   "parameters": {
@@ -57,8 +57,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "actionGroup": {
       "type": "microsoft.insights/actionGroups",
       "apiVersion": "2019-06-01",
       "name": "[parameters('actionGroupName')]",
@@ -78,7 +78,7 @@
         "armRoleReceivers": "[parameters('armRoleReceivers')]"
       }
     }
-  ],
+  },
   "outputs": {
     "actionGroupId": {
       "type": "string",

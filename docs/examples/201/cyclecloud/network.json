@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "1939485911648662340"
+      "templateHash": "6189470488623452173"
     }
   },
   "parameters": {
@@ -19,8 +19,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "nsg": {
       "type": "Microsoft.Network/networkSecurityGroups",
       "apiVersion": "2020-06-01",
       "name": "cc-nsg",
@@ -69,7 +69,7 @@
         ]
       }
     },
-    {
+    "vnet": {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2020-05-01",
       "name": "cc-vnet",
@@ -93,10 +93,10 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkSecurityGroups', 'cc-nsg')]"
+        "nsg"
       ]
     }
-  ],
+  },
   "outputs": {
     "vnetId": {
       "type": "string",

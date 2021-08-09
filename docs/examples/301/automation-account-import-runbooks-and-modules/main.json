@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "17984519031339270084"
+      "templateHash": "16356133555797720532"
     }
   },
   "parameters": {
@@ -110,8 +110,8 @@
     "lockName": "[format('{0}-lck', parameters('name'))]",
     "diagnosticsName": "[format('{0}-dgs', parameters('name'))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "automationAccount": {
       "type": "Microsoft.Automation/automationAccounts",
       "apiVersion": "2020-01-13-preview",
       "name": "[parameters('name')]",
@@ -125,7 +125,7 @@
         }
       }
     },
-    {
+    "automationAccountModules": {
       "copy": {
         "name": "automationAccountModules",
         "count": "[length(parameters('modules'))]"
@@ -140,10 +140,10 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Automation/automationAccounts', parameters('name'))]"
+        "automationAccount"
       ]
     },
-    {
+    "runbook": {
       "copy": {
         "name": "runbook",
         "count": "[length(parameters('runbooks'))]"
@@ -161,10 +161,10 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Automation/automationAccounts', parameters('name'))]"
+        "automationAccount"
       ]
     },
-    {
+    "lock": {
       "condition": "[parameters('enableDeleteLock')]",
       "type": "Microsoft.Authorization/locks",
       "apiVersion": "2016-09-01",
@@ -174,10 +174,10 @@
         "level": "CanNotDelete"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Automation/automationAccounts', parameters('name'))]"
+        "automationAccount"
       ]
     },
-    {
+    "diagnostics": {
       "condition": "[parameters('enableDiagnostics')]",
       "type": "Microsoft.Insights/diagnosticSettings",
       "apiVersion": "2017-05-01-preview",
@@ -208,14 +208,14 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Automation/automationAccounts', parameters('name'))]"
+        "automationAccount"
       ]
     }
-  ],
+  },
   "outputs": {
     "systemIdentityPrincipalId": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Automation/automationAccounts', parameters('name')), '2020-01-13-preview', 'full').identity.principalId]"
+      "value": "[reference('automationAccount', '2020-01-13-preview', 'full').identity.principalId]"
     }
   }
 }

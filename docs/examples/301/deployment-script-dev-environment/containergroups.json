@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "6673808017610235563"
+      "templateHash": "14799547524107377720"
     }
   },
   "parameters": {
@@ -74,8 +74,8 @@
       "[format('echo hello; sleep {0}', parameters('sessionTime'))]"
     ]
   },
-  "resources": [
-    {
+  "resources": {
+    "containerGroupName": {
       "type": "Microsoft.ContainerInstance/containerGroups",
       "apiVersion": "2019-12-01",
       "name": "[parameters('name')]",
@@ -122,5 +122,5 @@
         ]
       }
     }
-  ]
+  }
 }

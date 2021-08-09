@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "3429125868248426249"
+      "templateHash": "5467163661580793758"
     }
   },
   "parameters": {
@@ -50,8 +50,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "virtualNetwork": {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2020-06-01",
       "name": "vnet-01",
@@ -64,7 +64,7 @@
         }
       }
     },
-    {
+    "subnet": {
       "type": "Microsoft.Network/virtualNetworks/subnets",
       "apiVersion": "2020-06-01",
       "name": "[format('{0}/subnet-01', 'vnet-01')]",
@@ -72,10 +72,10 @@
         "addressPrefix": "10.0.1.0/24"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks', 'vnet-01')]"
+        "virtualNetwork"
       ]
     },
-    {
+    "hostingEnvironment": {
       "type": "Microsoft.Web/hostingEnvironments",
       "apiVersion": "2020-06-01",
       "name": "[parameters('aseName')]",
@@ -94,11 +94,11 @@
         "workerPools": []
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks/subnets', split(format('{0}/subnet-01', 'vnet-01'), '/')[0], split(format('{0}/subnet-01', 'vnet-01'), '/')[1])]",
-        "[resourceId('Microsoft.Network/virtualNetworks', 'vnet-01')]"
+        "subnet",
+        "virtualNetwork"
       ]
     },
-    {
+    "serverFarm": {
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2020-06-01",
       "name": "[parameters('appServicePlanName')]",
@@ -116,10 +116,10 @@
         "capacity": "[parameters('numberOfWorkers')]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/hostingEnvironments', parameters('aseName'))]"
+        "hostingEnvironment"
       ]
     },
-    {
+    "website": {
       "type": "Microsoft.Web/sites",
       "apiVersion": "2020-06-01",
       "name": "[parameters('websiteName')]",
@@ -131,9 +131,9 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/hostingEnvironments', parameters('aseName'))]",
-        "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
+        "hostingEnvironment",
+        "serverFarm"
       ]
     }
-  ]
+  }
 }

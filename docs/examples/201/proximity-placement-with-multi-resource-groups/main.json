@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "7661622005334280319"
+      "templateHash": "14466752197093217491"
     }
   },
   "parameters": {
@@ -27,26 +27,26 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "rgnet": {
       "type": "Microsoft.Resources/resourceGroups",
       "apiVersion": "2019-05-01",
       "name": "bicep-network-rg",
       "location": "[parameters('location')]"
     },
-    {
+    "rganchor": {
       "type": "Microsoft.Resources/resourceGroups",
       "apiVersion": "2019-05-01",
       "name": "bicep-anchor-rg",
       "location": "[parameters('location')]"
     },
-    {
+    "rgworkload": {
       "type": "Microsoft.Resources/resourceGroups",
       "apiVersion": "2019-05-01",
       "name": "bicep-workload-rg",
       "location": "[parameters('location')]"
     },
-    {
+    "network": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "network",
@@ -68,7 +68,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "6221020817843547137"
+              "templateHash": "14828767590995914721"
             }
           },
           "parameters": {
@@ -82,8 +82,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "nsg": {
               "type": "Microsoft.Network/networkSecurityGroups",
               "apiVersion": "2020-06-01",
               "name": "demo-nsg",
@@ -132,7 +132,7 @@
                 ]
               }
             },
-            {
+            "vnet": {
               "type": "Microsoft.Network/virtualNetworks",
               "apiVersion": "2020-05-01",
               "name": "demo-vnet",
@@ -156,10 +156,10 @@
                 ]
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', 'demo-nsg')]"
+                "nsg"
               ]
             }
-          ],
+          },
           "outputs": {
             "vnetId": {
               "type": "string",
@@ -169,10 +169,10 @@
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', 'bicep-network-rg')]"
+        "rgnet"
       ]
     },
-    {
+    "ppg": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "anchor",
@@ -187,7 +187,7 @@
             "value": "[parameters('adminSshKey')]"
           },
           "subnetId": {
-            "value": "[format('{0}/subnets/Default', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'bicep-network-rg'), 'Microsoft.Resources/deployments', 'network'), '2019-10-01').outputs.vnetId.value)]"
+            "value": "[format('{0}/subnets/Default', reference('network').outputs.vnetId.value)]"
           },
           "vmName": {
             "value": "anchor"
@@ -203,7 +203,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "13350537502727073112"
+              "templateHash": "2742272643661335033"
             }
           },
           "parameters": {
@@ -230,8 +230,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "ppg": {
               "type": "Microsoft.Compute/proximityPlacementGroups",
               "apiVersion": "2020-06-01",
               "name": "[format('Zone-{0}', parameters('zone'))]",
@@ -240,7 +240,7 @@
                 "proximityPlacementGroupType": "Standard"
               }
             },
-            {
+            "pip": {
               "type": "Microsoft.Network/publicIPAddresses",
               "apiVersion": "2020-05-01",
               "name": "[format('{0}-pip', parameters('vmName'))]",
@@ -255,7 +255,7 @@
                 "[parameters('zone')]"
               ]
             },
-            {
+            "nic": {
               "type": "Microsoft.Network/networkInterfaces",
               "apiVersion": "2020-05-01",
               "name": "[format('{0}-nic', parameters('vmName'))]",
@@ -277,10 +277,10 @@
                 ]
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}-pip', parameters('vmName')))]"
+                "pip"
               ]
             },
-            {
+            "vm": {
               "type": "Microsoft.Compute/virtualMachines",
               "apiVersion": "2020-06-01",
               "name": "[parameters('vmName')]",
@@ -334,11 +334,11 @@
                 "[parameters('zone')]"
               ],
               "dependsOn": [
-                "[resourceId('Microsoft.Network/networkInterfaces', format('{0}-nic', parameters('vmName')))]",
-                "[resourceId('Microsoft.Compute/proximityPlacementGroups', format('Zone-{0}', parameters('zone')))]"
+                "nic",
+                "ppg"
               ]
             }
-          ],
+          },
           "outputs": {
             "ppgId": {
               "type": "string",
@@ -348,11 +348,11 @@
         }
       },
       "dependsOn": [
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'bicep-network-rg'), 'Microsoft.Resources/deployments', 'network')]",
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', 'bicep-anchor-rg')]"
+        "network",
+        "rganchor"
       ]
     },
-    {
+    "vm01": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "vm01",
@@ -367,10 +367,10 @@
             "value": "[parameters('adminSshKey')]"
           },
           "ppgId": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'bicep-anchor-rg'), 'Microsoft.Resources/deployments', 'anchor'), '2019-10-01').outputs.ppgId.value]"
+            "value": "[reference('ppg').outputs.ppgId.value]"
           },
           "subnetId": {
-            "value": "[format('{0}/subnets/Default', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'bicep-network-rg'), 'Microsoft.Resources/deployments', 'network'), '2019-10-01').outputs.vnetId.value)]"
+            "value": "[format('{0}/subnets/Default', reference('network').outputs.vnetId.value)]"
           },
           "vmName": {
             "value": "vm01"
@@ -383,7 +383,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "4387499852680388806"
+              "templateHash": "17118546031008433707"
             }
           },
           "parameters": {
@@ -405,8 +405,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "as": {
               "type": "Microsoft.Compute/availabilitySets",
               "apiVersion": "2020-06-01",
               "name": "as",
@@ -422,7 +422,7 @@
                 "name": "Aligned"
               }
             },
-            {
+            "nic": {
               "type": "Microsoft.Network/networkInterfaces",
               "apiVersion": "2020-05-01",
               "name": "[format('{0}-nic', parameters('vmName'))]",
@@ -441,7 +441,7 @@
                 ]
               }
             },
-            {
+            "vm": {
               "type": "Microsoft.Compute/virtualMachines",
               "apiVersion": "2020-06-01",
               "name": "[parameters('vmName')]",
@@ -492,20 +492,20 @@
                 }
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Compute/availabilitySets', 'as')]",
-                "[resourceId('Microsoft.Network/networkInterfaces', format('{0}-nic', parameters('vmName')))]"
+                "as",
+                "nic"
               ]
             }
-          ]
+          }
         }
       },
       "dependsOn": [
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'bicep-network-rg'), 'Microsoft.Resources/deployments', 'network')]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'bicep-anchor-rg'), 'Microsoft.Resources/deployments', 'anchor')]",
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', 'bicep-workload-rg')]"
+        "network",
+        "ppg",
+        "rgworkload"
       ]
     },
-    {
+    "vm02": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "vm02",
@@ -520,10 +520,10 @@
             "value": "[parameters('adminSshKey')]"
           },
           "ppgId": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'bicep-anchor-rg'), 'Microsoft.Resources/deployments', 'anchor'), '2019-10-01').outputs.ppgId.value]"
+            "value": "[reference('ppg').outputs.ppgId.value]"
           },
           "subnetId": {
-            "value": "[format('{0}/subnets/Default', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'bicep-network-rg'), 'Microsoft.Resources/deployments', 'network'), '2019-10-01').outputs.vnetId.value)]"
+            "value": "[format('{0}/subnets/Default', reference('network').outputs.vnetId.value)]"
           },
           "vmName": {
             "value": "vm02"
@@ -536,7 +536,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "4387499852680388806"
+              "templateHash": "17118546031008433707"
             }
           },
           "parameters": {
@@ -558,8 +558,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "as": {
               "type": "Microsoft.Compute/availabilitySets",
               "apiVersion": "2020-06-01",
               "name": "as",
@@ -575,7 +575,7 @@
                 "name": "Aligned"
               }
             },
-            {
+            "nic": {
               "type": "Microsoft.Network/networkInterfaces",
               "apiVersion": "2020-05-01",
               "name": "[format('{0}-nic', parameters('vmName'))]",
@@ -594,7 +594,7 @@
                 ]
               }
             },
-            {
+            "vm": {
               "type": "Microsoft.Compute/virtualMachines",
               "apiVersion": "2020-06-01",
               "name": "[parameters('vmName')]",
@@ -645,18 +645,18 @@
                 }
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Compute/availabilitySets', 'as')]",
-                "[resourceId('Microsoft.Network/networkInterfaces', format('{0}-nic', parameters('vmName')))]"
+                "as",
+                "nic"
               ]
             }
-          ]
+          }
         }
       },
       "dependsOn": [
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'bicep-network-rg'), 'Microsoft.Resources/deployments', 'network')]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'bicep-anchor-rg'), 'Microsoft.Resources/deployments', 'anchor')]",
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', 'bicep-workload-rg')]"
+        "network",
+        "ppg",
+        "rgworkload"
       ]
     }
-  ]
+  }
 }

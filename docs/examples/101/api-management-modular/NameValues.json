@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "2914496037611283856"
+      "templateHash": "10766903069788110759"
     }
   },
   "parameters": {
@@ -36,8 +36,8 @@
       }
     ]
   },
-  "resources": [
-    {
+  "resources": {
+    "apiManagementNVPair": {
       "copy": {
         "name": "apiManagementNVPair",
         "count": "[length(variables('apimNameValueSet'))]"
@@ -52,7 +52,7 @@
         "tags": "[variables('apimNameValueSet')[copyIndex()].tags]"
       }
     }
-  ],
+  },
   "outputs": {
     "apimNameValues": {
       "type": "array",

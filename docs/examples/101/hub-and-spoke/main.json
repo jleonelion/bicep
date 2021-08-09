@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "4257812848289644805"
+      "templateHash": "14559750872901749791"
     }
   },
   "parameters": {
@@ -15,20 +15,20 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "hubrg": {
       "type": "Microsoft.Resources/resourceGroups",
       "apiVersion": "2020-06-01",
       "name": "hub-rg",
       "location": "[parameters('region')]"
     },
-    {
+    "spokerg": {
       "type": "Microsoft.Resources/resourceGroups",
       "apiVersion": "2020-06-01",
       "name": "spoke-rg",
       "location": "[parameters('region')]"
     },
-    {
+    "hubVNET": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "hub-vnet",
@@ -65,7 +65,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "3715870865053330009"
+              "templateHash": "10788385233312215164"
             }
           },
           "parameters": {
@@ -80,8 +80,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "vnet": {
               "type": "Microsoft.Network/virtualNetworks",
               "apiVersion": "2020-06-01",
               "name": "[format('{0}-rg', parameters('prefix'))]",
@@ -93,7 +93,7 @@
                 "subnets": "[parameters('subnets')]"
               }
             }
-          ],
+          },
           "outputs": {
             "name": {
               "type": "string",
@@ -107,10 +107,10 @@
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', 'hub-rg')]"
+        "hubrg"
       ]
     },
-    {
+    "spokeVNET": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "spoke-vnet",
@@ -137,7 +137,7 @@
                 "properties": {
                   "addressPrefix": "10.0.0.0/24",
                   "routeTable": {
-                    "id": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'spoke-rg'), 'Microsoft.Resources/deployments', 'spoke-rot'), '2019-10-01').outputs.id.value]"
+                    "id": "[reference('route').outputs.id.value]"
                   }
                 }
               }
@@ -151,7 +151,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "3715870865053330009"
+              "templateHash": "10788385233312215164"
             }
           },
           "parameters": {
@@ -166,8 +166,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "vnet": {
               "type": "Microsoft.Network/virtualNetworks",
               "apiVersion": "2020-06-01",
               "name": "[format('{0}-rg', parameters('prefix'))]",
@@ -179,7 +179,7 @@
                 "subnets": "[parameters('subnets')]"
               }
             }
-          ],
+          },
           "outputs": {
             "name": {
               "type": "string",
@@ -193,11 +193,11 @@
         }
       },
       "dependsOn": [
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'spoke-rg'), 'Microsoft.Resources/deployments', 'spoke-rot')]",
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', 'spoke-rg')]"
+        "route",
+        "spokerg"
       ]
     },
-    {
+    "Hubfwl": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "hub-fwl",
@@ -212,7 +212,7 @@
             "value": "hub"
           },
           "hubId": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'hub-rg'), 'Microsoft.Resources/deployments', 'hub-vnet'), '2019-10-01').outputs.id.value]"
+            "value": "[reference('hubVNET').outputs.id.value]"
           }
         },
         "template": {
@@ -222,7 +222,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "11918431151627110969"
+              "templateHash": "203545789656340190"
             }
           },
           "parameters": {
@@ -234,8 +234,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "publicIp": {
               "type": "Microsoft.Network/publicIPAddresses",
               "apiVersion": "2020-06-01",
               "name": "[format('{0}-fwl-ip', parameters('prefix'))]",
@@ -248,7 +248,7 @@
                 "name": "Standard"
               }
             },
-            {
+            "fwl": {
               "type": "Microsoft.Network/azureFirewalls",
               "apiVersion": "2020-06-01",
               "name": "[format('{0}-fwl', parameters('prefix'))]",
@@ -269,24 +269,24 @@
                 ]
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}-fwl-ip', parameters('prefix')))]"
+                "publicIp"
               ]
             }
-          ],
+          },
           "outputs": {
             "privateIp": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/azureFirewalls', format('{0}-fwl', parameters('prefix')))).ipConfigurations[0].properties.privateIPAddress]"
+              "value": "[reference('fwl').ipConfigurations[0].properties.privateIPAddress]"
             }
           }
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', 'hub-rg')]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'hub-rg'), 'Microsoft.Resources/deployments', 'hub-vnet')]"
+        "hubrg",
+        "hubVNET"
       ]
     },
-    {
+    "HubToSpokePeering": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "hub-to-spoke-peering",
@@ -298,13 +298,13 @@
         "mode": "Incremental",
         "parameters": {
           "localVnetName": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'hub-rg'), 'Microsoft.Resources/deployments', 'hub-vnet'), '2019-10-01').outputs.name.value]"
+            "value": "[reference('hubVNET').outputs.name.value]"
           },
           "remoteVnetName": {
             "value": "spoke"
           },
           "remoteVnetId": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'spoke-rg'), 'Microsoft.Resources/deployments', 'spoke-vnet'), '2019-10-01').outputs.id.value]"
+            "value": "[reference('spokeVNET').outputs.id.value]"
           }
         },
         "template": {
@@ -314,7 +314,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "5614441752281108595"
+              "templateHash": "13159035510968017368"
             }
           },
           "parameters": {
@@ -329,8 +329,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "peer": {
               "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
               "apiVersion": "2020-06-01",
               "name": "[format('{0}/to-{1}', parameters('localVnetName'), parameters('remoteVnetName'))]",
@@ -344,16 +344,16 @@
                 }
               }
             }
-          ]
+          }
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', 'hub-rg')]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'hub-rg'), 'Microsoft.Resources/deployments', 'hub-vnet')]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'spoke-rg'), 'Microsoft.Resources/deployments', 'spoke-vnet')]"
+        "hubrg",
+        "hubVNET",
+        "spokeVNET"
       ]
     },
-    {
+    "SpokeToHubPeering": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "spoke-to-hub-peering",
@@ -365,13 +365,13 @@
         "mode": "Incremental",
         "parameters": {
           "localVnetName": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'spoke-rg'), 'Microsoft.Resources/deployments', 'spoke-vnet'), '2019-10-01').outputs.name.value]"
+            "value": "[reference('spokeVNET').outputs.name.value]"
           },
           "remoteVnetName": {
             "value": "hub"
           },
           "remoteVnetId": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'hub-rg'), 'Microsoft.Resources/deployments', 'hub-vnet'), '2019-10-01').outputs.id.value]"
+            "value": "[reference('hubVNET').outputs.id.value]"
           }
         },
         "template": {
@@ -381,7 +381,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "5614441752281108595"
+              "templateHash": "13159035510968017368"
             }
           },
           "parameters": {
@@ -396,8 +396,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "peer": {
               "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
               "apiVersion": "2020-06-01",
               "name": "[format('{0}/to-{1}', parameters('localVnetName'), parameters('remoteVnetName'))]",
@@ -411,16 +411,16 @@
                 }
               }
             }
-          ]
+          }
         }
       },
       "dependsOn": [
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'hub-rg'), 'Microsoft.Resources/deployments', 'hub-vnet')]",
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', 'spoke-rg')]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'spoke-rg'), 'Microsoft.Resources/deployments', 'spoke-vnet')]"
+        "hubVNET",
+        "spokerg",
+        "spokeVNET"
       ]
     },
-    {
+    "route": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "spoke-rot",
@@ -435,7 +435,7 @@
             "value": "spoke"
           },
           "azFwlIp": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'hub-rg'), 'Microsoft.Resources/deployments', 'hub-fwl'), '2019-10-01').outputs.privateIp.value]"
+            "value": "[reference('Hubfwl').outputs.privateIp.value]"
           }
         },
         "template": {
@@ -445,7 +445,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "12110720187620775770"
+              "templateHash": "10631235006288915857"
             }
           },
           "parameters": {
@@ -457,8 +457,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "route": {
               "type": "Microsoft.Network/routeTables",
               "apiVersion": "2020-06-01",
               "name": "[format('{0}-rot', parameters('prefix'))]",
@@ -477,7 +477,7 @@
                 ]
               }
             }
-          ],
+          },
           "outputs": {
             "id": {
               "type": "string",
@@ -487,9 +487,9 @@
         }
       },
       "dependsOn": [
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'hub-rg'), 'Microsoft.Resources/deployments', 'hub-fwl')]",
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', 'spoke-rg')]"
+        "Hubfwl",
+        "spokerg"
       ]
     }
-  ]
+  }
 }

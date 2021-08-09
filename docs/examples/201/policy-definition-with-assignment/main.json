@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "2605189513208279262"
+      "templateHash": "3591573047492590138"
     }
   },
   "parameters": {
@@ -25,8 +25,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "locationPolicyDefinition": {
       "type": "Microsoft.Authorization/policyDefinitions",
       "apiVersion": "2020-09-01",
       "name": "custom-allowed-location",
@@ -68,7 +68,7 @@
         }
       }
     },
-    {
+    "locationPolicy": {
       "type": "Microsoft.Authorization/policyAssignments",
       "apiVersion": "2020-09-01",
       "name": "Resource-location-restriction",
@@ -86,8 +86,8 @@
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', 'custom-allowed-location')]"
+        "locationPolicyDefinition"
       ]
     }
-  ]
+  }
 }

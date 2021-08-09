@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "17593228818037020755"
+      "templateHash": "1823717738800646170"
     }
   },
   "parameters": {
@@ -142,14 +142,14 @@
       ]
     }
   },
-  "resources": [
-    {
+  "resources": {
+    "servernsg": {
       "type": "Microsoft.Network/networkSecurityGroups",
       "apiVersion": "2020-05-01",
       "name": "[variables('servernsgname')]",
       "location": "[parameters('location')]"
     },
-    {
+    "bastionnsg": {
       "type": "Microsoft.Network/networkSecurityGroups",
       "apiVersion": "2020-06-01",
       "name": "[variables('bastionnsgname')]",
@@ -158,7 +158,7 @@
         "securityRules": "[variables('bastionnsgrules').securityRules]"
       }
     },
-    {
+    "vnet": {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2020-05-01",
       "name": "[parameters('vnetname')]",
@@ -203,11 +203,11 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('bastionnsgname'))]",
-        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('servernsgname'))]"
+        "bastionnsg",
+        "servernsg"
       ]
     }
-  ],
+  },
   "outputs": {
     "id": {
       "type": "string",
@@ -215,11 +215,11 @@
     },
     "subnets": {
       "type": "array",
-      "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetname'))).subnets]"
+      "value": "[reference('vnet').subnets]"
     },
     "vnetaddress": {
       "type": "array",
-      "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetname'))).addressSpace.addressPrefixes]"
+      "value": "[reference('vnet').addressSpace.addressPrefixes]"
     }
   }
 }

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "4010150104196921853"
+      "templateHash": "2846247498410923886"
     }
   },
   "parameters": {
@@ -65,8 +65,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "hp": {
       "type": "Microsoft.DesktopVirtualization/hostPools",
       "apiVersion": "2019-12-10-preview",
       "name": "[parameters('hostpoolName')]",
@@ -78,7 +78,7 @@
         "preferredAppGroupType": "[parameters('preferredAppGroupType')]"
       }
     },
-    {
+    "ag": {
       "type": "Microsoft.DesktopVirtualization/applicationGroups",
       "apiVersion": "2019-12-10-preview",
       "name": "[parameters('appgroupName')]",
@@ -89,10 +89,10 @@
         "hostPoolArmPath": "[resourceId('Microsoft.DesktopVirtualization/hostPools', parameters('hostpoolName'))]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.DesktopVirtualization/hostPools', parameters('hostpoolName'))]"
+        "hp"
       ]
     },
-    {
+    "ws": {
       "type": "Microsoft.DesktopVirtualization/workspaces",
       "apiVersion": "2019-12-10-preview",
       "name": "[parameters('workspaceName')]",
@@ -104,10 +104,10 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.DesktopVirtualization/applicationGroups', parameters('appgroupName'))]"
+        "ag"
       ]
     },
-    {
+    "avdmonitor": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "LAWorkspace",
@@ -144,7 +144,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "3864819428445360434"
+              "templateHash": "14609109412548755870"
             }
           },
           "parameters": {
@@ -170,8 +170,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "avdla": {
               "type": "Microsoft.OperationalInsights/workspaces",
               "apiVersion": "2020-08-01",
               "name": "[parameters('logAnalyticsWorkspaceName')]",
@@ -182,7 +182,7 @@
                 }
               }
             },
-            {
+            "avdmonitor": {
               "type": "Microsoft.Resources/deployments",
               "apiVersion": "2019-10-01",
               "name": "myBicepLADiag",
@@ -210,7 +210,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "dev",
-                      "templateHash": "1455955442339016099"
+                      "templateHash": "16900059712492763166"
                     }
                   },
                   "parameters": {
@@ -225,8 +225,8 @@
                     }
                   },
                   "functions": [],
-                  "resources": [
-                    {
+                  "resources": {
+                    "avdhpds": {
                       "type": "Microsoft.Insights/diagnosticSettings",
                       "apiVersion": "2017-05-01-preview",
                       "scope": "[format('Microsoft.DesktopVirtualization/hostPools/{0}', parameters('hostpoolName'))]",
@@ -257,7 +257,7 @@
                         ]
                       }
                     },
-                    {
+                    "avdwsds": {
                       "type": "Microsoft.Insights/diagnosticSettings",
                       "apiVersion": "2017-05-01-preview",
                       "scope": "[format('Microsoft.DesktopVirtualization/workspaces/{0}', parameters('workspaceName'))]",
@@ -284,20 +284,20 @@
                         ]
                       }
                     }
-                  ]
+                  }
                 }
               },
               "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsWorkspaceName'))]"
+                "avdla"
               ]
             }
-          ]
+          }
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.DesktopVirtualization/hostPools', parameters('hostpoolName'))]",
-        "[resourceId('Microsoft.DesktopVirtualization/workspaces', parameters('workspaceName'))]"
+        "hp",
+        "ws"
       ]
     }
-  ]
+  }
 }

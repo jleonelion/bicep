@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "861346519223189514"
+      "templateHash": "3508228555708193597"
     }
   },
   "parameters": {
@@ -33,8 +33,8 @@
     "subnetAddressPrefix": "10.0.0.0/24",
     "appServicePlanSku": "S1"
   },
-  "resources": [
-    {
+  "resources": {
+    "appServicePlan": {
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2020-06-01",
       "name": "[variables('appServicePlanName')]",
@@ -44,7 +44,7 @@
       },
       "kind": "app"
     },
-    {
+    "vnet": {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2020-06-01",
       "name": "[variables('vnetName')]",
@@ -73,7 +73,7 @@
         ]
       }
     },
-    {
+    "webApp": {
       "type": "Microsoft.Web/sites",
       "apiVersion": "2020-06-01",
       "name": "[parameters('appName')]",
@@ -83,22 +83,22 @@
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+        "appServicePlan",
+        "vnet"
       ]
     },
-    {
+    "webappVnet": {
       "type": "Microsoft.Web/sites/networkConfig",
       "apiVersion": "2020-06-01",
       "name": "[format('{0}/{1}', parameters('appName'), 'virtualNetwork')]",
       "properties": {
-        "subnetResourceId": "[reference(resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))).subnets[0].id]",
+        "subnetResourceId": "[reference('vnet').subnets[0].id]",
         "swiftSupported": true
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
-        "[resourceId('Microsoft.Web/sites', parameters('appName'))]"
+        "vnet",
+        "webApp"
       ]
     }
-  ]
+  }
 }

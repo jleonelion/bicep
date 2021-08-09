@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "7795098484119813219"
+      "templateHash": "1696866964532691527"
     }
   },
   "parameters": {
@@ -56,8 +56,8 @@
     "redirectExampleTarget": "api.myip.com",
     "frontDoorWafName": "[format('{0}{1}', parameters('frontDoorWafNamePrefix'), uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('frontDoorWafNamePrefix')))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "resAzFd": {
       "type": "Microsoft.Network/frontDoors",
       "apiVersion": "2020-01-01",
       "name": "[variables('frontDoorNameLower')]",
@@ -181,10 +181,10 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/FrontDoorWebApplicationFirewallPolicies', variables('frontDoorWafName'))]"
+        "resAzFdWaf"
       ]
     },
-    {
+    "resAzFdWaf": {
       "type": "Microsoft.Network/FrontDoorWebApplicationFirewallPolicies",
       "apiVersion": "2019-10-01",
       "name": "[variables('frontDoorWafName')]",
@@ -210,5 +210,5 @@
         }
       }
     }
-  ]
+  }
 }

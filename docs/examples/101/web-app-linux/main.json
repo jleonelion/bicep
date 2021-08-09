@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "2526357515241197461"
+      "templateHash": "8455920728647740806"
     }
   },
   "parameters": {
@@ -31,8 +31,8 @@
     "appServicePlanName": "[toLower(format('AppServicePlan-{0}', parameters('webAppName')))]",
     "webSiteName": "[toLower(format('wapp-{0}', parameters('webAppName')))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "appServicePlan": {
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2020-06-01",
       "name": "[variables('appServicePlanName')]",
@@ -45,7 +45,7 @@
         "reserved": true
       }
     },
-    {
+    "appService": {
       "type": "Microsoft.Web/sites",
       "apiVersion": "2020-06-01",
       "name": "[variables('webSiteName')]",
@@ -58,8 +58,8 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]"
+        "appServicePlan"
       ]
     }
-  ]
+  }
 }

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "10127040548662503532"
+      "templateHash": "10924678308642073417"
     }
   },
   "parameters": {
@@ -21,8 +21,8 @@
   "variables": {
     "logAnalyticsName": "[toLower(format('la-{0}', parameters('appName')))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "logAnalyticsWorkspace": {
       "type": "Microsoft.OperationalInsights/workspaces",
       "apiVersion": "2020-03-01-preview",
       "name": "[variables('logAnalyticsName')]",
@@ -38,7 +38,7 @@
         "retentionInDays": 120
       }
     }
-  ],
+  },
   "outputs": {
     "logAnalaticsWorkspaceResourceID": {
       "type": "string",

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "12528836535334827814"
+      "templateHash": "15487890201661154567"
     }
   },
   "parameters": {
@@ -58,8 +58,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "localnetworkgw": {
       "type": "Microsoft.Network/localNetworkGateways",
       "apiVersion": "2020-06-01",
       "name": "[parameters('localnetworkgwname')]",
@@ -75,7 +75,7 @@
         }
       }
     },
-    {
+    "s2sconnection": {
       "type": "Microsoft.Network/connections",
       "apiVersion": "2020-06-01",
       "name": "[parameters('connectionname')]",
@@ -95,8 +95,8 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/localNetworkGateways', parameters('localnetworkgwname'))]"
+        "localnetworkgw"
       ]
     }
-  ]
+  }
 }

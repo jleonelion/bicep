@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "2750460495032513094"
+      "templateHash": "7680479630770476577"
     }
   },
   "parameters": {
@@ -29,8 +29,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "wan": {
       "type": "Microsoft.Network/virtualWans",
       "apiVersion": "2020-06-01",
       "name": "[parameters('wanname')]",
@@ -42,7 +42,7 @@
         "office365LocalBreakoutCategory": "None"
       }
     }
-  ],
+  },
   "outputs": {
     "id": {
       "type": "string",

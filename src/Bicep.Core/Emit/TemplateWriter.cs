@@ -263,7 +263,7 @@ namespace Bicep.Core.Emit
         private void EmitResources(JsonTextWriter jsonWriter, ExpressionEmitter emitter)
         {
             jsonWriter.WritePropertyName("resources");
-            jsonWriter.WriteStartArray();
+            jsonWriter.WriteStartObject();
 
             foreach (var resource in this.context.SemanticModel.AllResources)
             {
@@ -280,7 +280,7 @@ namespace Bicep.Core.Emit
                 this.EmitModule(jsonWriter, moduleSymbol, emitter);
             }
 
-            jsonWriter.WriteEndArray();
+            jsonWriter.WriteEndObject();
         }
 
         private long? GetBatchSize(StatementSyntax decoratedSyntax)
@@ -297,6 +297,7 @@ namespace Bicep.Core.Emit
 
         private void EmitResource(JsonTextWriter jsonWriter, ResourceMetadata resource, ExpressionEmitter emitter)
         {
+            jsonWriter.WritePropertyName(resource.Symbol.Name);
             jsonWriter.WriteStartObject();
 
             // Note: conditions STACK with nesting.
@@ -444,6 +445,7 @@ namespace Bicep.Core.Emit
 
         private void EmitModule(JsonTextWriter jsonWriter, ModuleSymbol moduleSymbol, ExpressionEmitter emitter)
         {
+            jsonWriter.WritePropertyName(moduleSymbol.Name);
             jsonWriter.WriteStartObject();
 
             var body = moduleSymbol.DeclaringModule.Value;
@@ -572,12 +574,19 @@ namespace Bicep.Core.Emit
                             // dependency is on the entire resource collection
                             // write the name of the resource collection as the dependency
                             jsonWriter.WriteValue(resourceDependency.DeclaringResource.Name.IdentifierName);
-
                             break;
                         }
 
                         var resource = context.SemanticModel.ResourceMetadata.TryLookup(resourceDependency.DeclaringSyntax) ??
                             throw new ArgumentException($"Unable to find resource metadata for dependency '{dependency.Resource.Name}'");
+
+                        if (!resource.IsExistingResource && !resourceDependency.IsCollection)
+                        {
+                            // We don't have a mechaism for referring to an individual resource in a loop using symbolic names,
+                            // so here we can only use the symbolic name if we're not referencing a collection item.
+                            jsonWriter.WriteValue(resource.Symbol.Name);
+                            break;
+                        }
 
                         emitter.EmitResourceIdReference(resource, dependency.IndexExpression, newContext);
                         break;
@@ -588,6 +597,14 @@ namespace Bicep.Core.Emit
                             // write the name of the module collection as the dependency
                             jsonWriter.WriteValue(moduleDependency.DeclaringModule.Name.IdentifierName);
 
+                            break;
+                        }
+
+                        if (!moduleDependency.IsCollection)
+                        {
+                            // We don't have a mechaism for referring to an individual resource in a loop using symbolic names,
+                            // so here we can only use the symbolic name if we're not referencing a collection item.
+                            jsonWriter.WriteValue(moduleDependency.Name);
                             break;
                         }
 

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "8253833847310498693"
+      "templateHash": "1990102499191745851"
     }
   },
   "parameters": {
@@ -33,8 +33,8 @@
     "appInsightName": "[toLower(format('appi-{0}', parameters('appName')))]",
     "logAnalyticsName": "[toLower(format('la-{0}', parameters('appName')))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "appServicePlan": {
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2020-06-01",
       "name": "[variables('appServicePlanName')]",
@@ -48,7 +48,7 @@
         "ProjectName": "[parameters('appName')]"
       }
     },
-    {
+    "appService": {
       "type": "Microsoft.Web/sites",
       "apiVersion": "2020-06-01",
       "name": "[variables('webSiteName')]",
@@ -68,10 +68,10 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]"
+        "appServicePlan"
       ]
     },
-    {
+    "appServiceLogging": {
       "type": "Microsoft.Web/sites/config",
       "apiVersion": "2020-06-01",
       "name": "[format('{0}/logs', variables('webSiteName'))]",
@@ -95,32 +95,32 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', variables('webSiteName'))]"
+        "appService"
       ]
     },
-    {
+    "appServiceAppSettings": {
       "type": "Microsoft.Web/sites/config",
       "apiVersion": "2020-06-01",
       "name": "[format('{0}/appsettings', variables('webSiteName'))]",
       "properties": {
-        "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightName'))).InstrumentationKey]"
+        "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference('appInsights').InstrumentationKey]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Insights/components', variables('appInsightName'))]",
-        "[resourceId('Microsoft.Web/sites', variables('webSiteName'))]",
-        "[resourceId('Microsoft.Web/sites/siteextensions', split(format('{0}/Microsoft.ApplicationInsights.AzureWebsites', variables('webSiteName')), '/')[0], split(format('{0}/Microsoft.ApplicationInsights.AzureWebsites', variables('webSiteName')), '/')[1])]"
+        "appInsights",
+        "appService",
+        "appServiceSiteExtension"
       ]
     },
-    {
+    "appServiceSiteExtension": {
       "type": "Microsoft.Web/sites/siteextensions",
       "apiVersion": "2020-06-01",
       "name": "[format('{0}/Microsoft.ApplicationInsights.AzureWebsites', variables('webSiteName'))]",
       "dependsOn": [
-        "[resourceId('Microsoft.Insights/components', variables('appInsightName'))]",
-        "[resourceId('Microsoft.Web/sites', variables('webSiteName'))]"
+        "appInsights",
+        "appService"
       ]
     },
-    {
+    "appInsights": {
       "type": "Microsoft.Insights/components",
       "apiVersion": "2020-02-02-preview",
       "name": "[variables('appInsightName')]",
@@ -135,10 +135,10 @@
         "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName'))]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName'))]"
+        "logAnalyticsWorkspace"
       ]
     },
-    {
+    "logAnalyticsWorkspace": {
       "type": "Microsoft.OperationalInsights/workspaces",
       "apiVersion": "2020-03-01-preview",
       "name": "[variables('logAnalyticsName')]",
@@ -154,5 +154,5 @@
         "retentionInDays": 120
       }
     }
-  ]
+  }
 }

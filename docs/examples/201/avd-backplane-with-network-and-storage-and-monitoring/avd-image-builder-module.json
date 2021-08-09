@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "12367961123551245048"
+      "templateHash": "2599356715413476317"
     }
   },
   "parameters": {
@@ -52,8 +52,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "imageTemplateName_resource": {
       "type": "Microsoft.VirtualMachineImages/imageTemplates",
       "apiVersion": "2020-02-14",
       "name": "[parameters('imageTemplateName')]",
@@ -95,7 +95,7 @@
         ]
       }
     },
-    {
+    "aibdef": {
       "condition": "[parameters('InvokeRunImageBuildThroughDeploymentScript')]",
       "type": "Microsoft.Authorization/roleDefinitions",
       "apiVersion": "2018-01-01-preview",
@@ -119,7 +119,7 @@
         ]
       }
     },
-    {
+    "aibrunnerassignment": {
       "condition": "[parameters('InvokeRunImageBuildThroughDeploymentScript')]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2020-04-01-preview",
@@ -130,10 +130,10 @@
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Authorization/roleDefinitions', guid(parameters('roleNameAIBCustom')))]"
+        "aibdef"
       ]
     },
-    {
+    "miorole": {
       "condition": "[parameters('InvokeRunImageBuildThroughDeploymentScript')]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2020-04-01-preview",
@@ -144,7 +144,7 @@
         "principalType": "ServicePrincipal"
       }
     },
-    {
+    "scriptName_BuildVMImage": {
       "condition": "[parameters('InvokeRunImageBuildThroughDeploymentScript')]",
       "type": "Microsoft.Resources/deploymentScripts",
       "apiVersion": "2020-10-01",
@@ -167,8 +167,8 @@
         "retentionInterval": "P1D"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.VirtualMachineImages/imageTemplates', parameters('imageTemplateName'))]"
+        "imageTemplateName_resource"
       ]
     }
-  ]
+  }
 }

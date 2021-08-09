@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "6247775802720855708"
+      "templateHash": "10991089022694382679"
     }
   },
   "parameters": {
@@ -38,8 +38,8 @@
     "networkSecurityGroupName": "NSG",
     "networkSecurityGroupName2": "[concat(variables('subnet2Name'), '-nsg')]"
   },
-  "resources": [
-    {
+  "resources": {
+    "diagsAccount": {
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2017-06-01",
       "name": "[variables('diagStorageAccountName')]",
@@ -49,14 +49,14 @@
       },
       "kind": "Storage"
     },
-    {
+    "nsg2": {
       "type": "Microsoft.Network/networkSecurityGroups",
       "apiVersion": "2019-08-01",
       "name": "[variables('networkSecurityGroupName2')]",
       "location": "[parameters('location')]",
       "properties": {}
     },
-    {
+    "vnet": {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2017-06-01",
       "name": "[variables('virtualNetworkName')]",
@@ -86,10 +86,10 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName2'))]"
+        "nsg2"
       ]
     },
-    {
+    "nic1": {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2017-06-01",
       "name": "[variables('nic1Name')]",
@@ -114,12 +114,12 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]",
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+        "nsg",
+        "pip",
+        "vnet"
       ]
     },
-    {
+    "nic2": {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2017-06-01",
       "name": "[variables('nic2Name')]",
@@ -138,10 +138,10 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+        "vnet"
       ]
     },
-    {
+    "pip": {
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "2017-06-01",
       "name": "[variables('publicIPAddressName')]",
@@ -150,7 +150,7 @@
         "publicIPAllocationMethod": "Dynamic"
       }
     },
-    {
+    "nsg": {
       "type": "Microsoft.Network/networkSecurityGroups",
       "apiVersion": "2016-09-01",
       "name": "[variables('networkSecurityGroupName')]",
@@ -173,7 +173,7 @@
         ]
       }
     },
-    {
+    "vmMod": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "vmMod",
@@ -202,7 +202,7 @@
             "value": "[resourceId('Microsoft.Network/networkInterfaces', variables('nic2Name'))]"
           },
           "diagsStorageUri": {
-            "value": "[reference(resourceId('Microsoft.Storage/storageAccounts', variables('diagStorageAccountName'))).primaryEndpoints.blob]"
+            "value": "[reference('diagsAccount').primaryEndpoints.blob]"
           }
         },
         "template": {
@@ -212,7 +212,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "13125082143369532135"
+              "templateHash": "16054862924376422619"
             }
           },
           "parameters": {
@@ -243,8 +243,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "vm": {
               "type": "Microsoft.Compute/virtualMachines",
               "apiVersion": "2017-03-30",
               "name": "[parameters('virtualMachineName')]",
@@ -297,20 +297,20 @@
                 }
               }
             }
-          ]
+          }
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('diagStorageAccountName'))]",
-        "[resourceId('Microsoft.Network/networkInterfaces', variables('nic1Name'))]",
-        "[resourceId('Microsoft.Network/networkInterfaces', variables('nic2Name'))]"
+        "diagsAccount",
+        "nic1",
+        "nic2"
       ]
     }
-  ],
+  },
   "outputs": {
     "publicIp": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))).ipAddress]"
+      "value": "[reference('pip').ipAddress]"
     }
   }
 }

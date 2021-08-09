@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "5652906742106607423"
+      "templateHash": "8931598953277707424"
     }
   },
   "parameters": {
@@ -64,8 +64,8 @@
     "publicIpName": "[format('{0}-pip', parameters('dnsLabelPrefix'))]",
     "subnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('existingVnetName'), parameters('existingSubnetName'))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "publicIp": {
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "2020-06-01",
       "name": "[variables('publicIpName')]",
@@ -77,7 +77,7 @@
         }
       }
     },
-    {
+    "storageAccount": {
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2020-08-01-preview",
       "name": "[variables('storageAccountName')]",
@@ -87,7 +87,7 @@
         "name": "Standard_LRS"
       }
     },
-    {
+    "nic": {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2020-06-01",
       "name": "[variables('nicName')]",
@@ -109,10 +109,10 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]"
+        "publicIp"
       ]
     },
-    {
+    "virtualMachine": {
       "type": "Microsoft.Compute/virtualMachines",
       "apiVersion": "2020-06-01",
       "name": "[parameters('dnsLabelPrefix')]",
@@ -158,16 +158,16 @@
         "diagnosticsProfile": {
           "bootDiagnostics": {
             "enabled": true,
-            "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))).primaryEndpoints.blob]"
+            "storageUri": "[reference('storageAccount').primaryEndpoints.blob]"
           }
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]",
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+        "nic",
+        "storageAccount"
       ]
     },
-    {
+    "virtualMachineExtension": {
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "apiVersion": "2020-06-01",
       "name": "[format('{0}/joindomain', parameters('dnsLabelPrefix'))]",
@@ -189,8 +189,8 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', parameters('dnsLabelPrefix'))]"
+        "virtualMachine"
       ]
     }
-  ]
+  }
 }

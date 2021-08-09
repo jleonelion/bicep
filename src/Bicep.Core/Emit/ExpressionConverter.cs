@@ -451,18 +451,21 @@ namespace Bicep.Core.Emit
             AppendProperties(
                 CreateFunction(
                     "reference",
-                    GetFullyQualifiedResourceId(moduleSymbol),
-                    new JTokenExpression(TemplateWriter.NestedDeploymentResourceApiVersion)),
+                    new JTokenExpression(moduleSymbol.Name)),
                 new JTokenExpression("outputs"));
 
         public FunctionExpression GetReferenceExpression(ResourceMetadata resource, bool full)
         {
+            var referenceName = resource.IsExistingResource ? 
+                GetFullyQualifiedResourceId(resource) : 
+                new JTokenExpression(resource.Symbol.Name);
+
             // full gives access to top-level resource properties, but generates a longer statement
             if (full)
             {
                 return CreateFunction(
                     "reference",
-                    GetFullyQualifiedResourceId(resource),
+                    referenceName,
                     new JTokenExpression(resource.TypeReference.ApiVersion),
                     new JTokenExpression("full"));
             }
@@ -472,13 +475,13 @@ namespace Bicep.Core.Emit
                 // we must include an API version for an existing resource, because it cannot be inferred from any deployed template resource
                 return CreateFunction(
                     "reference",
-                    GetFullyQualifiedResourceId(resource),
+                    referenceName,
                     new JTokenExpression(resource.TypeReference.ApiVersion));
             }
 
             return CreateFunction(
                 "reference",
-                GetFullyQualifiedResourceId(resource));
+                referenceName);
         }
 
         private LanguageExpression GetLocalVariableExpression(LocalVariableSymbol localVariableSymbol)

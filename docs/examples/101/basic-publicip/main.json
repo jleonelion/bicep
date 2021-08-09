@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "11880842360465113288"
+      "templateHash": "11541769773419361961"
     }
   },
   "parameters": {
@@ -15,8 +15,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "publicIp": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "publicIp",
@@ -40,7 +40,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "17282422556248381741"
+              "templateHash": "17847769470383177250"
             }
           },
           "parameters": {
@@ -60,8 +60,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "publicIp": {
               "type": "Microsoft.Network/publicIPAddresses",
               "apiVersion": "2020-06-01",
               "name": "[parameters('publicIpResourceName')]",
@@ -73,21 +73,21 @@
                 }
               }
             }
-          ],
+          },
           "outputs": {
             "ipFqdn": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIpResourceName'))).dnsSettings.fqdn]"
+              "value": "[reference('publicIp').dnsSettings.fqdn]"
             }
           }
         }
       }
     }
-  ],
+  },
   "outputs": {
     "ipFqdn": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'publicIp'), '2019-10-01').outputs.ipFqdn.value]"
+      "value": "[reference('publicIp').outputs.ipFqdn.value]"
     }
   }
 }

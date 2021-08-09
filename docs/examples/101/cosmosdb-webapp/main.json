@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "108437092261803770"
+      "templateHash": "5095122232720447664"
     }
   },
   "parameters": {
@@ -89,8 +89,8 @@
     "websiteName": "[parameters('applicationName')]",
     "hostingPlanName": "[parameters('applicationName')]"
   },
-  "resources": [
-    {
+  "resources": {
+    "cosmosAccount": {
       "type": "Microsoft.DocumentDB/databaseAccounts",
       "apiVersion": "2021-04-15",
       "name": "[variables('cosmosAccountName')]",
@@ -110,7 +110,7 @@
         "databaseAccountOfferType": "Standard"
       }
     },
-    {
+    "hostingPlan": {
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2020-06-01",
       "name": "[variables('hostingPlanName')]",
@@ -120,7 +120,7 @@
         "capacity": "[parameters('appServicePlanInstances')]"
       }
     },
-    {
+    "website": {
       "type": "Microsoft.Web/sites",
       "apiVersion": "2020-06-01",
       "name": "[variables('websiteName')]",
@@ -131,7 +131,7 @@
           "appSettings": [
             {
               "name": "CosmosDb:Account",
-              "value": "[reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosAccountName'))).documentEndpoint]"
+              "value": "[reference('cosmosAccount').documentEndpoint]"
             },
             {
               "name": "CosmosDb:Key",
@@ -149,11 +149,11 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosAccountName'))]",
-        "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+        "cosmosAccount",
+        "hostingPlan"
       ]
     },
-    {
+    "srcControls": {
       "type": "Microsoft.Web/sites/sourcecontrols",
       "apiVersion": "2020-06-01",
       "name": "[format('{0}/web', variables('websiteName'))]",
@@ -163,8 +163,8 @@
         "isManualIntegration": true
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', variables('websiteName'))]"
+        "website"
       ]
     }
-  ]
+  }
 }

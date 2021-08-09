@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "5447449594683998530"
+      "templateHash": "13869000694118794907"
     }
   },
   "parameters": {
@@ -24,8 +24,8 @@
       "BATCH_COMPLETED_GROUP"
     ]
   },
-  "resources": [
-    {
+  "resources": {
+    "auditSettings": {
       "type": "Microsoft.Sql/servers/databases/auditingSettings",
       "apiVersion": "2021-02-01-preview",
       "name": "[format('{0}/{1}/Default', parameters('sqlServerName'), parameters('sqlDatabase').name)]",
@@ -39,5 +39,5 @@
         "isAzureMonitorTargetEnabled": "[parameters('sqlDatabase').diagnosticLogsAndMetrics.auditLogs]"
       }
     }
-  ]
+  }
 }

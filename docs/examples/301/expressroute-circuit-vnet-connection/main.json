@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "3493822942554386929"
+      "templateHash": "10320953251379847540"
     }
   },
   "parameters": {
@@ -43,8 +43,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "virtualNetwork": {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2020-06-01",
       "name": "[parameters('virtualNetworkName')]",
@@ -57,7 +57,7 @@
         }
       }
     },
-    {
+    "subnet": {
       "type": "Microsoft.Network/virtualNetworks/subnets",
       "apiVersion": "2020-06-01",
       "name": "[format('{0}/{1}', parameters('virtualNetworkName'), parameters('subnetName'))]",
@@ -65,10 +65,10 @@
         "addressPrefix": "[parameters('subnetPrefix')]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
+        "virtualNetwork"
       ]
     },
-    {
+    "gatewaySubnet": {
       "type": "Microsoft.Network/virtualNetworks/subnets",
       "apiVersion": "2020-06-01",
       "name": "[format('{0}/GatewaySubnet', parameters('virtualNetworkName'))]",
@@ -76,10 +76,10 @@
         "addressPrefix": "[parameters('gatewaySubnetPrefix')]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
+        "virtualNetwork"
       ]
     },
-    {
+    "publicIP": {
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "2020-06-01",
       "name": "[parameters('gatewayPublicIPName')]",
@@ -88,7 +88,7 @@
         "publicIPAllocationMethod": "Dynamic"
       }
     },
-    {
+    "virtualNetworkGateway": {
       "type": "Microsoft.Network/virtualNetworkGateways",
       "apiVersion": "2020-06-01",
       "name": "[parameters('gatewayName')]",
@@ -111,11 +111,11 @@
         "gatewayType": "ExpressRoute"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks/subnets', split(format('{0}/GatewaySubnet', parameters('virtualNetworkName')), '/')[0], split(format('{0}/GatewaySubnet', parameters('virtualNetworkName')), '/')[1])]",
-        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('gatewayPublicIPName'))]"
+        "gatewaySubnet",
+        "publicIP"
       ]
     },
-    {
+    "connection": {
       "type": "Microsoft.Network/connections",
       "apiVersion": "2020-06-01",
       "name": "[parameters('connectionName')]",
@@ -132,8 +132,8 @@
         "routingWeight": 3
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworkGateways', parameters('gatewayName'))]"
+        "virtualNetworkGateway"
       ]
     }
-  ]
+  }
 }

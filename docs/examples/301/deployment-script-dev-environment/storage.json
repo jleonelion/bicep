@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "10072553779848923110"
+      "templateHash": "18399810240855769347"
     }
   },
   "parameters": {
@@ -55,8 +55,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "storage": {
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2019-06-01",
       "name": "[parameters('name')]",
@@ -69,15 +69,15 @@
         "accessTier": "[parameters('accessTier')]"
       }
     },
-    {
+    "fileshare": {
       "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
       "apiVersion": "2019-06-01",
       "name": "[format('{0}/default/{1}', parameters('name'), parameters('fileShareName'))]",
       "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', parameters('name'))]"
+        "storage"
       ]
     }
-  ],
+  },
   "outputs": {
     "resourceId": {
       "type": "string",

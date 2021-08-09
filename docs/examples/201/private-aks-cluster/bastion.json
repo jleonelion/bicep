@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "9608724785177199123"
+      "templateHash": "7609900497157442677"
     }
   },
   "parameters": {
@@ -33,8 +33,8 @@
   "variables": {
     "bastionPublicIpAddressName": "[format('{0}PublicIp', parameters('bastionHostName'))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "bastionPublicIpAddress": {
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "2020-08-01",
       "name": "[variables('bastionPublicIpAddressName')]",
@@ -46,7 +46,7 @@
         "publicIPAllocationMethod": "Static"
       }
     },
-    {
+    "bastionHost": {
       "type": "Microsoft.Network/bastionHosts",
       "apiVersion": "2020-08-01",
       "name": "[parameters('bastionHostName')]",
@@ -67,8 +67,8 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastionPublicIpAddressName'))]"
+        "bastionPublicIpAddress"
       ]
     }
-  ]
+  }
 }

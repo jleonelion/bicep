@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "8956462873572192114"
+      "templateHash": "12372529795551944297"
     }
   },
   "parameters": {
@@ -62,8 +62,8 @@
     },
     "agentPoolName": "agentpool01"
   },
-  "resources": [
-    {
+  "resources": {
+    "vn": {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2020-06-01",
       "name": "[variables('virtualNetworkName')]",
@@ -85,7 +85,7 @@
         ]
       }
     },
-    {
+    "aks": {
       "type": "Microsoft.ContainerService/managedClusters",
       "apiVersion": "2020-09-01",
       "name": "[parameters('clusterName')]",
@@ -120,10 +120,10 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+        "vn"
       ]
     }
-  ],
+  },
   "outputs": {
     "id": {
       "type": "string",
@@ -131,7 +131,7 @@
     },
     "apiServerAddress": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', parameters('clusterName'))).fqdn]"
+      "value": "[reference('aks').fqdn]"
     }
   }
 }

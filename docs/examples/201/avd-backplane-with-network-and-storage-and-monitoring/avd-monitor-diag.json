@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "1455955442339016099"
+      "templateHash": "16900059712492763166"
     }
   },
   "parameters": {
@@ -20,8 +20,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "avdhpds": {
       "type": "Microsoft.Insights/diagnosticSettings",
       "apiVersion": "2017-05-01-preview",
       "scope": "[format('Microsoft.DesktopVirtualization/hostPools/{0}', parameters('hostpoolName'))]",
@@ -52,7 +52,7 @@
         ]
       }
     },
-    {
+    "avdwsds": {
       "type": "Microsoft.Insights/diagnosticSettings",
       "apiVersion": "2017-05-01-preview",
       "scope": "[format('Microsoft.DesktopVirtualization/workspaces/{0}', parameters('workspaceName'))]",
@@ -79,5 +79,5 @@
         ]
       }
     }
-  ]
+  }
 }

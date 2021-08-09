@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "8105070701854868101"
+      "templateHash": "17120226364628614919"
     }
   },
   "parameters": {
@@ -21,8 +21,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "secret": {
       "type": "Microsoft.KeyVault/vaults/secrets",
       "apiVersion": "2019-09-01",
       "name": "[format('{0}/{1}', parameters('existingKeyVaultName'), parameters('secretName'))]",
@@ -30,5 +30,5 @@
         "value": "[parameters('secretValue')]"
       }
     }
-  ]
+  }
 }

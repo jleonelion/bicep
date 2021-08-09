@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "4482504764276967972"
+      "templateHash": "9396420291295353820"
     }
   },
   "parameters": {
@@ -40,8 +40,8 @@
     "storageEndpoint": "[format('{0}StorageEndpoint', parameters('projectName'))]",
     "storageContainerName": "[format('{0}results', toLower(parameters('projectName')))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "stg": {
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2019-06-01",
       "name": "[variables('storageAccountName')]",
@@ -51,7 +51,7 @@
       },
       "kind": "Storage"
     },
-    {
+    "blob": {
       "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
       "apiVersion": "2019-06-01",
       "name": "[format('{0}/default/{1}', variables('storageAccountName'), variables('storageContainerName'))]",
@@ -59,10 +59,10 @@
         "publicAccess": "None"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+        "stg"
       ]
     },
-    {
+    "iot": {
       "type": "Microsoft.Devices/IotHubs",
       "apiVersion": "2020-03-01",
       "name": "[variables('iotHubName')]",
@@ -132,8 +132,8 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+        "stg"
       ]
     }
-  ]
+  }
 }

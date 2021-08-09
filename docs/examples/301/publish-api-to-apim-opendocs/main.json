@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "9254032152856996155"
+      "templateHash": "10662426911642633336"
     }
   },
   "parameters": {
@@ -70,8 +70,8 @@
       }
     ]
   },
-  "resources": [
-    {
+  "resources": {
+    "ProductRecords": {
       "copy": {
         "name": "ProductRecords",
         "count": "[length(variables('productsSet'))]"
@@ -89,7 +89,7 @@
         "state": "[variables('productsSet')[copyIndex()].publishState]"
       }
     },
-    {
+    "functionAPI": {
       "type": "Microsoft.ApiManagement/service/apis",
       "apiVersion": "2020-12-01",
       "name": "[format('{0}/{1}', parameters('apimInstanceName'), parameters('apiName'))]",
@@ -99,7 +99,7 @@
         "path": "[parameters('apiPath')]"
       }
     },
-    {
+    "attachAPIToProducts": {
       "copy": {
         "name": "attachAPIToProducts",
         "count": "[length(variables('productsSet'))]"
@@ -111,7 +111,7 @@
         "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimInstanceName'), variables('productsSet')[copyIndex()].productName)]"
       ]
     }
-  ],
+  },
   "outputs": {
     "apimProducts": {
       "type": "array",

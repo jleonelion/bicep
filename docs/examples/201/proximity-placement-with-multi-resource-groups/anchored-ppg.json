@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "13350537502727073112"
+      "templateHash": "2742272643661335033"
     }
   },
   "parameters": {
@@ -32,8 +32,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "ppg": {
       "type": "Microsoft.Compute/proximityPlacementGroups",
       "apiVersion": "2020-06-01",
       "name": "[format('Zone-{0}', parameters('zone'))]",
@@ -42,7 +42,7 @@
         "proximityPlacementGroupType": "Standard"
       }
     },
-    {
+    "pip": {
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "2020-05-01",
       "name": "[format('{0}-pip', parameters('vmName'))]",
@@ -57,7 +57,7 @@
         "[parameters('zone')]"
       ]
     },
-    {
+    "nic": {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2020-05-01",
       "name": "[format('{0}-nic', parameters('vmName'))]",
@@ -79,10 +79,10 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}-pip', parameters('vmName')))]"
+        "pip"
       ]
     },
-    {
+    "vm": {
       "type": "Microsoft.Compute/virtualMachines",
       "apiVersion": "2020-06-01",
       "name": "[parameters('vmName')]",
@@ -136,11 +136,11 @@
         "[parameters('zone')]"
       ],
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkInterfaces', format('{0}-nic', parameters('vmName')))]",
-        "[resourceId('Microsoft.Compute/proximityPlacementGroups', format('Zone-{0}', parameters('zone')))]"
+        "nic",
+        "ppg"
       ]
     }
-  ],
+  },
   "outputs": {
     "ppgId": {
       "type": "string",

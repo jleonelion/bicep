@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "7674149474155193249"
+      "templateHash": "14155225579903891119"
     }
   },
   "parameters": {
@@ -25,8 +25,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "deployTs": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2021-01-01",
       "name": "deployTs",
@@ -38,5 +38,5 @@
         "parameters": {}
       }
     }
-  ]
+  }
 }

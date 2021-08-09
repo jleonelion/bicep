@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "4598814261157091151"
+      "templateHash": "17081121325218910674"
     }
   },
   "parameters": {
@@ -71,8 +71,8 @@
     "networkSecurityGroupName": "[format('{0}-nsg', parameters('managedInstanceName'))]",
     "routeTableName": "[format('{0}-routetable', parameters('managedInstanceName'))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "networkSecurityGroup": {
       "type": "Microsoft.Network/networkSecurityGroups",
       "apiVersion": "2020-06-01",
       "name": "[variables('networkSecurityGroupName')]",
@@ -138,7 +138,7 @@
         ]
       }
     },
-    {
+    "routeTable": {
       "type": "Microsoft.Network/routeTables",
       "apiVersion": "2020-06-01",
       "name": "[variables('routeTableName')]",
@@ -147,7 +147,7 @@
         "disableBgpRoutePropagation": false
       }
     },
-    {
+    "virtualNetwork": {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2020-06-01",
       "name": "[parameters('virtualNetworkName')]",
@@ -160,7 +160,7 @@
         }
       }
     },
-    {
+    "subnet": {
       "type": "Microsoft.Network/virtualNetworks/subnets",
       "apiVersion": "2020-06-01",
       "name": "[parameters('subnetName')]",
@@ -182,11 +182,11 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]",
-        "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]"
+        "networkSecurityGroup",
+        "routeTable"
       ]
     },
-    {
+    "managedInstance": {
       "type": "Microsoft.Sql/managedInstances",
       "apiVersion": "2020-02-02-preview",
       "name": "[parameters('managedInstanceName')]",
@@ -206,8 +206,8 @@
         "licenseType": "LicenseIncluded"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks/subnets', split(parameters('subnetName'), '/')[0], split(parameters('subnetName'), '/')[1])]"
+        "subnet"
       ]
     }
-  ]
+  }
 }

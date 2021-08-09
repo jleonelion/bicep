@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "11275464343508829008"
+      "templateHash": "824899710553427284"
     }
   },
   "parameters": {
@@ -20,8 +20,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "functionAppCustomHostEnable": {
       "type": "Microsoft.Web/sites/hostNameBindings",
       "apiVersion": "2020-06-01",
       "name": "[format('{0}/{1}', parameters('functionAppName'), parameters('functionAppHostname'))]",
@@ -30,5 +30,5 @@
         "thumbprint": "[parameters('certificateThumbprint')]"
       }
     }
-  ]
+  }
 }

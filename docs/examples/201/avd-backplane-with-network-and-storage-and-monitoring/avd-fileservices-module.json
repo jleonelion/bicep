@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "4546637334796479546"
+      "templateHash": "4741308148063580809"
     }
   },
   "parameters": {
@@ -31,8 +31,8 @@
   "variables": {
     "filesharelocation": "[format('{0}/default/{1}', parameters('storageaccountName'), parameters('fileshareFolderName'))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "sa": {
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2020-08-01-preview",
       "name": "[parameters('storageaccountName')]",
@@ -42,15 +42,15 @@
         "name": "[parameters('storgeaccountglobalRedundancy')]"
       }
     },
-    {
+    "fs": {
       "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
       "apiVersion": "2020-08-01-preview",
       "name": "[variables('filesharelocation')]",
       "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageaccountName'))]"
+        "sa"
       ]
     }
-  ],
+  },
   "outputs": {
     "storageAccountId": {
       "type": "string",

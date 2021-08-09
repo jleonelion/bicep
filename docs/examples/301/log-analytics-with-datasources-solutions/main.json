@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "7762388379069236663"
+      "templateHash": "3110602837779724324"
     }
   },
   "parameters": {
@@ -99,8 +99,8 @@
     "lockName": "[format('{0}-lck', parameters('name'))]",
     "diagnosticsName": "[format('{0}-dgs', parameters('name'))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "logAnalyticsWorkspace": {
       "type": "Microsoft.OperationalInsights/workspaces",
       "apiVersion": "2020-08-01",
       "name": "[parameters('name')]",
@@ -112,7 +112,7 @@
         "retentionInDays": "[parameters('retentionInDays')]"
       }
     },
-    {
+    "logAnalyticsSolutions": {
       "copy": {
         "name": "logAnalyticsSolutions",
         "count": "[length(parameters('solutions'))]"
@@ -131,10 +131,10 @@
         "promotionCode": "[parameters('solutions')[copyIndex()].promotionCode]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('name'))]"
+        "logAnalyticsWorkspace"
       ]
     },
-    {
+    "logAnalyticsAutomation": {
       "condition": "[not(empty(parameters('automationAccountName')))]",
       "type": "Microsoft.OperationalInsights/workspaces/linkedServices",
       "apiVersion": "2020-08-01",
@@ -143,10 +143,10 @@
         "resourceId": "[resourceId('Microsoft.Automation/automationAccounts', parameters('automationAccountName'))]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('name'))]"
+        "logAnalyticsWorkspace"
       ]
     },
-    {
+    "logAnalyticsDataSource": {
       "copy": {
         "name": "logAnalyticsDataSource",
         "count": "[length(parameters('dataSources'))]"
@@ -157,10 +157,10 @@
       "kind": "[parameters('dataSources')[copyIndex()].kind]",
       "properties": "[parameters('dataSources')[copyIndex()].properties]",
       "dependsOn": [
-        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('name'))]"
+        "logAnalyticsWorkspace"
       ]
     },
-    {
+    "lock": {
       "condition": "[parameters('enableDeleteLock')]",
       "type": "Microsoft.Authorization/locks",
       "apiVersion": "2016-09-01",
@@ -170,10 +170,10 @@
         "level": "CanNotDelete"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('name'))]"
+        "logAnalyticsWorkspace"
       ]
     },
-    {
+    "diagnostics": {
       "condition": "[parameters('enableDiagnostics')]",
       "type": "Microsoft.Insights/diagnosticSettings",
       "apiVersion": "2017-05-01-preview",
@@ -196,8 +196,8 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('name'))]"
+        "logAnalyticsWorkspace"
       ]
     }
-  ]
+  }
 }

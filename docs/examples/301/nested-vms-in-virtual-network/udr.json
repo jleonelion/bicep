@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "13461864852699596542"
+      "templateHash": "7578183039893977111"
     }
   },
   "parameters": {
@@ -26,8 +26,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "udr": {
       "type": "Microsoft.Network/routeTables",
       "apiVersion": "2020-06-01",
       "name": "[parameters('udrName')]",
@@ -36,7 +36,7 @@
         "routes": "[if(equals(parameters('addressPrefix'), ''), null(), createArray(createObject('name', 'Nested-VMs', 'properties', createObject('addressPrefix', parameters('addressPrefix'), 'nextHopType', 'VirtualAppliance', 'nextHopIpAddress', parameters('nextHopAddress')))))]"
       }
     }
-  ],
+  },
   "outputs": {
     "udrId": {
       "type": "string",

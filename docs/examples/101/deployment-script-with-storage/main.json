@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "2936624157539141144"
+      "templateHash": "15000707031688416923"
     }
   },
   "parameters": {
@@ -38,8 +38,8 @@
   "variables": {
     "uamiId": "[resourceId(parameters('subId'), parameters('rgName'), 'Microsoft.ManagedIdentity/userAssignedIdentities', parameters('uamiName'))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "stg": {
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2019-06-01",
       "name": "[format('dscript{0}', uniqueString(resourceGroup().id))]",
@@ -49,7 +49,7 @@
         "name": "Standard_LRS"
       }
     },
-    {
+    "dScript": {
       "type": "Microsoft.Resources/deploymentScripts",
       "apiVersion": "2019-10-01-preview",
       "name": "scriptWithStorage",
@@ -73,10 +73,10 @@
         "forceUpdateTag": "[parameters('currentTime')]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', format('dscript{0}', uniqueString(resourceGroup().id)))]"
+        "stg"
       ]
     }
-  ],
+  },
   "outputs": {
     "scriptLogs": {
       "type": "string",

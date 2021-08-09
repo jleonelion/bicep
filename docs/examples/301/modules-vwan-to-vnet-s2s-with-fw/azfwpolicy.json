@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "3995320789217660109"
+      "templateHash": "18370324618121379777"
     }
   },
   "parameters": {
@@ -27,8 +27,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "policy": {
       "type": "Microsoft.Network/firewallPolicies",
       "apiVersion": "2020-06-01",
       "name": "[parameters('policyname')]",
@@ -41,7 +41,7 @@
         }
       }
     },
-    {
+    "platformrcgroup": {
       "type": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
       "apiVersion": "2020-06-01",
       "name": "[format('{0}/Platform-Rules', parameters('policyname'))]",
@@ -129,10 +129,10 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/firewallPolicies', parameters('policyname'))]"
+        "policy"
       ]
     }
-  ],
+  },
   "outputs": {
     "name": {
       "type": "string",

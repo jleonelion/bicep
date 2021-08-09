@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "7725203689471739007"
+      "templateHash": "14328930217541685637"
     }
   },
   "parameters": {
@@ -39,8 +39,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "appServicePlan": {
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2020-12-01",
       "name": "[parameters('appServicePlanName')]",
@@ -50,7 +50,7 @@
         "tier": "Standard"
       }
     },
-    {
+    "webSite": {
       "type": "Microsoft.Web/sites",
       "apiVersion": "2020-12-01",
       "name": "[parameters('uniqueDnsNameForWebApp')]",
@@ -59,10 +59,10 @@
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
+        "appServicePlan"
       ]
     },
-    {
+    "trafficManagerProfile": {
       "type": "Microsoft.Network/trafficmanagerprofiles",
       "apiVersion": "2018-08-01",
       "name": "[parameters('trafficManagerName')]",
@@ -91,8 +91,8 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', parameters('uniqueDnsNameForWebApp'))]"
+        "webSite"
       ]
     }
-  ]
+  }
 }

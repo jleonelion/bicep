@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "14952033248081756653"
+      "templateHash": "1535198702716175891"
     }
   },
   "parameters": {
@@ -65,8 +65,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "containerGroup": {
       "type": "Microsoft.ContainerInstance/containerGroups",
       "apiVersion": "2019-12-01",
       "name": "[parameters('name')]",
@@ -105,11 +105,11 @@
         }
       }
     }
-  ],
+  },
   "outputs": {
     "containerIPv4Address": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.ContainerInstance/containerGroups', parameters('name'))).ipAddress.ip]"
+      "value": "[reference('containerGroup').ipAddress.ip]"
     }
   }
 }

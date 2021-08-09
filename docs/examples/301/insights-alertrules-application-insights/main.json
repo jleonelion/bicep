@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "6932515354107245659"
+      "templateHash": "15575548497490157148"
     }
   },
   "parameters": {
@@ -44,8 +44,8 @@
   "variables": {
     "responseAlertName": "[format('ResponseTime-{0}', toLower(parameters('applicationInsightsName')))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "workspace": {
       "type": "Microsoft.OperationalInsights/workspaces",
       "apiVersion": "2020-10-01",
       "name": "[parameters('workspaceName')]",
@@ -56,7 +56,7 @@
         }
       }
     },
-    {
+    "applicationInsights": {
       "type": "Microsoft.Insights/components",
       "apiVersion": "2020-02-02-preview",
       "name": "[parameters('applicationInsightsName')]",
@@ -67,10 +67,10 @@
         "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]"
+        "workspace"
       ]
     },
-    {
+    "metricAlert": {
       "type": "Microsoft.Insights/metricAlerts",
       "apiVersion": "2018-03-01",
       "name": "[variables('responseAlertName')]",
@@ -104,11 +104,11 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Insights/components', parameters('applicationInsightsName'))]",
-        "[resourceId('microsoft.insights/actionGroups', 'emailActionGroup')]"
+        "applicationInsights",
+        "emailActionGroup"
       ]
     },
-    {
+    "emailActionGroup": {
       "type": "microsoft.insights/actionGroups",
       "apiVersion": "2019-06-01",
       "name": "emailActionGroup",
@@ -125,5 +125,5 @@
         ]
       }
     }
-  ]
+  }
 }

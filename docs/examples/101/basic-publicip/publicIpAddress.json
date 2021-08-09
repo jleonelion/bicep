@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "17282422556248381741"
+      "templateHash": "17847769470383177250"
     }
   },
   "parameters": {
@@ -25,8 +25,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "publicIp": {
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "2020-06-01",
       "name": "[parameters('publicIpResourceName')]",
@@ -38,11 +38,11 @@
         }
       }
     }
-  ],
+  },
   "outputs": {
     "ipFqdn": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIpResourceName'))).dnsSettings.fqdn]"
+      "value": "[reference('publicIp').dnsSettings.fqdn]"
     }
   }
 }

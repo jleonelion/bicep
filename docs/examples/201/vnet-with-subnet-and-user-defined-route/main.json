@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "18428279402374731557"
+      "templateHash": "14644983865813855764"
     }
   },
   "parameters": {
@@ -58,8 +58,8 @@
   "variables": {
     "vnetName": "[format('vnet-{0}', parameters('vnetSuffix'))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "udr": {
       "condition": "[parameters('createUserDefinedRoutes')]",
       "type": "Microsoft.Network/routeTables",
       "apiVersion": "2020-06-01",
@@ -79,7 +79,7 @@
         "disableBgpRoutePropagation": false
       }
     },
-    {
+    "vnet": {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2020-06-01",
       "name": "[variables('vnetName')]",
@@ -108,8 +108,8 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/routeTables', parameters('udrName'))]"
+        "udr"
       ]
     }
-  ]
+  }
 }

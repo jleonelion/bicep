@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "7898404051007989226"
+      "templateHash": "8085609603863343064"
     }
   },
   "parameters": {
@@ -89,8 +89,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "cache": {
       "type": "Microsoft.Cache/redis",
       "apiVersion": "2020-06-01",
       "name": "[parameters('redisCacheName')]",
@@ -111,7 +111,7 @@
         }
       }
     },
-    {
+    "diagSettings": {
       "type": "Microsoft.Insights/diagnosticSettings",
       "apiVersion": "2017-05-01-preview",
       "scope": "[format('Microsoft.Cache/redis/{0}', parameters('redisCacheName'))]",
@@ -130,8 +130,8 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Cache/redis', parameters('redisCacheName'))]"
+        "cache"
       ]
     }
-  ]
+  }
 }

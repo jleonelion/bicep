@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "10932448770179421717"
+      "templateHash": "4054998338792896793"
     }
   },
   "parameters": {
@@ -18,8 +18,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "cacheAccount": {
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2019-06-01",
       "name": "[parameters('cacheAccountName')]",
@@ -42,7 +42,7 @@
         }
       }
     },
-    {
+    "diagsAccount": {
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2019-06-01",
       "name": "[format('diags{0}', uniqueString(resourceGroup().id))]",
@@ -56,7 +56,7 @@
       "kind": "Storage",
       "properties": {}
     }
-  ],
+  },
   "outputs": {
     "diagAccountId": {
       "type": "string",

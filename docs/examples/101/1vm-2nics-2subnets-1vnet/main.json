@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "15882862518723645512"
+      "templateHash": "5961783144546304757"
     }
   },
   "parameters": {
@@ -60,8 +60,8 @@
     "networkSecurityGroupName": "NSG",
     "networkSecurityGroupName2": "[format('{0}-nsg', variables('subnet2Name'))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "vm": {
       "type": "Microsoft.Compute/virtualMachines",
       "apiVersion": "2020-06-01",
       "name": "[variables('virtualMachineName')]",
@@ -108,17 +108,17 @@
         "diagnosticsProfile": {
           "bootDiagnostics": {
             "enabled": true,
-            "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts', variables('diagStorageAccountName'))).primaryEndpoints.blob]"
+            "storageUri": "[reference('diagsAccount').primaryEndpoints.blob]"
           }
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('diagStorageAccountName'))]",
-        "[resourceId('Microsoft.Network/networkInterfaces', variables('nic1Name'))]",
-        "[resourceId('Microsoft.Network/networkInterfaces', variables('nic2Name'))]"
+        "diagsAccount",
+        "nic1",
+        "nic2"
       ]
     },
-    {
+    "diagsAccount": {
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2019-06-01",
       "name": "[variables('diagStorageAccountName')]",
@@ -128,13 +128,13 @@
       },
       "kind": "StorageV2"
     },
-    {
+    "nsg2": {
       "type": "Microsoft.Network/networkSecurityGroups",
       "apiVersion": "2020-06-01",
       "name": "[variables('networkSecurityGroupName2')]",
       "location": "[parameters('location')]"
     },
-    {
+    "vnet": {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2020-06-01",
       "name": "[variables('virtualNetworkName')]",
@@ -164,10 +164,10 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName2'))]"
+        "nsg2"
       ]
     },
-    {
+    "nic1": {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2020-06-01",
       "name": "[variables('nic1Name')]",
@@ -192,12 +192,12 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]",
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+        "nsg",
+        "pip",
+        "vnet"
       ]
     },
-    {
+    "nic2": {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2020-06-01",
       "name": "[variables('nic2Name')]",
@@ -216,10 +216,10 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+        "vnet"
       ]
     },
-    {
+    "pip": {
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "2020-06-01",
       "name": "[variables('publicIPAddressName')]",
@@ -228,7 +228,7 @@
         "publicIPAllocationMethod": "Dynamic"
       }
     },
-    {
+    "nsg": {
       "type": "Microsoft.Network/networkSecurityGroups",
       "apiVersion": "2020-06-01",
       "name": "[variables('networkSecurityGroupName')]",
@@ -251,5 +251,5 @@
         ]
       }
     }
-  ]
+  }
 }

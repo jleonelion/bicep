@@ -15,7 +15,7 @@
     "myVar2": "test",
     "myVar3": "\ntest\n"
   },
-  "resources": [],
+  "resources": {},
   "outputs": {
     "out1": {
       "type": "string",

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "8156466852542605529"
+      "templateHash": "2089025364886883950"
     }
   },
   "parameters": {
@@ -35,8 +35,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "pip": {
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "2020-05-01",
       "name": "[format('{0}-pip', parameters('vmName'))]",
@@ -51,7 +51,7 @@
         "[parameters('zone')]"
       ]
     },
-    {
+    "nic": {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2020-05-01",
       "name": "[format('{0}-nic', parameters('vmName'))]",
@@ -73,10 +73,10 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}-pip', parameters('vmName')))]"
+        "pip"
       ]
     },
-    {
+    "vm": {
       "type": "Microsoft.Compute/virtualMachines",
       "apiVersion": "2020-06-01",
       "name": "[parameters('vmName')]",
@@ -130,8 +130,8 @@
         "[parameters('zone')]"
       ],
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkInterfaces', format('{0}-nic', parameters('vmName')))]"
+        "nic"
       ]
     }
-  ]
+  }
 }

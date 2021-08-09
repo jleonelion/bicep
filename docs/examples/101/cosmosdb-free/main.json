@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "7905015631986025863"
+      "templateHash": "3311152127972088765"
     }
   },
   "parameters": {
@@ -31,8 +31,8 @@
     }
   },
   "functions": [],
-  "resources": [
-    {
+  "resources": {
+    "cosmosAccount": {
       "type": "Microsoft.DocumentDB/databaseAccounts",
       "apiVersion": "2021-04-15",
       "name": "[toLower(parameters('accountName'))]",
@@ -50,7 +50,7 @@
         ]
       }
     },
-    {
+    "cosmosDB": {
       "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases",
       "apiVersion": "2021-04-15",
       "name": "[format('{0}/{1}', toLower(parameters('accountName')), toLower(parameters('databaseName')))]",
@@ -63,8 +63,8 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts', toLower(parameters('accountName')))]"
+        "cosmosAccount"
       ]
     }
-  ]
+  }
 }

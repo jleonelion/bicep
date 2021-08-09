@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "6061572376334368051"
+      "templateHash": "16757288368918575429"
     }
   },
   "parameters": {
@@ -47,14 +47,14 @@
   "variables": {
     "templateImageResourceGroupId": "[format('/subscriptions/{0}/resourcegroups/{1}', parameters('azureSubscriptionID'), parameters('templateImageResourceGroup'))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "wvdsig": {
       "type": "Microsoft.Compute/galleries",
       "apiVersion": "2020-09-30",
       "name": "[parameters('sigName')]",
       "location": "[parameters('sigLocation')]"
     },
-    {
+    "wvdid": {
       "type": "Microsoft.Compute/galleries/images",
       "apiVersion": "2020-09-30",
       "name": "[format('{0}/{1}', parameters('sigName'), parameters('imageDefinitionName'))]",
@@ -69,10 +69,10 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/galleries', parameters('sigName'))]"
+        "wvdsig"
       ]
     },
-    {
+    "gallerydef": {
       "type": "Microsoft.Authorization/roleDefinitions",
       "apiVersion": "2018-01-01-preview",
       "name": "[guid(parameters('roleNameGalleryImage'))]",
@@ -97,7 +97,7 @@
         ]
       }
     },
-    {
+    "galleryass": {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2020-04-01-preview",
       "name": "[guid(resourceGroup().id, resourceId('Microsoft.Authorization/roleDefinitions', guid(parameters('roleNameGalleryImage'))), parameters('principalId'))]",
@@ -106,8 +106,8 @@
         "principalId": "[parameters('principalId')]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Authorization/roleDefinitions', guid(parameters('roleNameGalleryImage')))]"
+        "gallerydef"
       ]
     }
-  ]
+  }
 }

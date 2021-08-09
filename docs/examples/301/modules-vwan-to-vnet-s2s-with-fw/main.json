@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "dev",
-      "templateHash": "18334610900919809958"
+      "templateHash": "9933609924525619578"
     }
   },
   "parameters": {
@@ -55,20 +55,20 @@
     "vhubfwpolicyname": "[format('{0}-{1}-fw-policy', parameters('nameprefix'), parameters('vwanlocation'))]",
     "vhubvpngwname": "[format('{0}-vpn-gw', variables('vhubname'))]"
   },
-  "resources": [
-    {
+  "resources": {
+    "hubrg": {
       "type": "Microsoft.Resources/resourceGroups",
       "apiVersion": "2020-06-01",
       "name": "[format('{0}-hubvnet-rg', parameters('nameprefix'))]",
       "location": "[parameters('vwanlocation')]"
     },
-    {
+    "vwanrg": {
       "type": "Microsoft.Resources/resourceGroups",
       "apiVersion": "2020-06-01",
       "name": "[format('{0}-vwan-rg', parameters('nameprefix'))]",
       "location": "[parameters('location')]"
     },
-    {
+    "vnet": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "[variables('vnetname')]",
@@ -108,7 +108,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "17593228818037020755"
+              "templateHash": "1823717738800646170"
             }
           },
           "parameters": {
@@ -245,14 +245,14 @@
               ]
             }
           },
-          "resources": [
-            {
+          "resources": {
+            "servernsg": {
               "type": "Microsoft.Network/networkSecurityGroups",
               "apiVersion": "2020-05-01",
               "name": "[variables('servernsgname')]",
               "location": "[parameters('location')]"
             },
-            {
+            "bastionnsg": {
               "type": "Microsoft.Network/networkSecurityGroups",
               "apiVersion": "2020-06-01",
               "name": "[variables('bastionnsgname')]",
@@ -261,7 +261,7 @@
                 "securityRules": "[variables('bastionnsgrules').securityRules]"
               }
             },
-            {
+            "vnet": {
               "type": "Microsoft.Network/virtualNetworks",
               "apiVersion": "2020-05-01",
               "name": "[parameters('vnetname')]",
@@ -306,11 +306,11 @@
                 ]
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('bastionnsgname'))]",
-                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('servernsgname'))]"
+                "bastionnsg",
+                "servernsg"
               ]
             }
-          ],
+          },
           "outputs": {
             "id": {
               "type": "string",
@@ -318,20 +318,20 @@
             },
             "subnets": {
               "type": "array",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetname'))).subnets]"
+              "value": "[reference('vnet').subnets]"
             },
             "vnetaddress": {
               "type": "array",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetname'))).addressSpace.addressPrefixes]"
+              "value": "[reference('vnet').addressSpace.addressPrefixes]"
             }
           }
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}-hubvnet-rg', parameters('nameprefix')))]"
+        "hubrg"
       ]
     },
-    {
+    "vpngw": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "vpngw-deploy",
@@ -349,7 +349,7 @@
             "value": "[variables('vpngwname')]"
           },
           "subnetref": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-hubvnet-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', variables('vnetname')), '2019-10-01').outputs.subnets.value[2].id]"
+            "value": "[reference('vnet').outputs.subnets.value[2].id]"
           },
           "vpngwpipname": {
             "value": "[variables('vpngwpipname')]"
@@ -365,7 +365,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "668994565981920361"
+              "templateHash": "5585972270132269608"
             }
           },
           "parameters": {
@@ -393,8 +393,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "vpngwpip": {
               "type": "Microsoft.Network/publicIPAddresses",
               "apiVersion": "2020-06-01",
               "name": "[parameters('vpngwpipname')]",
@@ -406,7 +406,7 @@
                 "publicIPAllocationMethod": "Static"
               }
             },
-            {
+            "vpngw": {
               "type": "Microsoft.Network/virtualNetworkGateways",
               "apiVersion": "2020-06-01",
               "name": "[parameters('vpngwname')]",
@@ -440,10 +440,10 @@
                 }
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('vpngwpipname'))]"
+                "vpngwpip"
               ]
             }
-          ],
+          },
           "outputs": {
             "id": {
               "type": "string",
@@ -451,25 +451,25 @@
             },
             "vpngwip": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', parameters('vpngwpipname'))).ipAddress]"
+              "value": "[reference('vpngwpip').ipAddress]"
             },
             "vpngwbgpaddress": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworkGateways', parameters('vpngwname'))).bgpSettings.bgpPeeringAddress]"
+              "value": "[reference('vpngw').bgpSettings.bgpPeeringAddress]"
             },
             "bgpasn": {
               "type": "int",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworkGateways', parameters('vpngwname'))).bgpSettings.asn]"
+              "value": "[reference('vpngw').bgpSettings.asn]"
             }
           }
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}-hubvnet-rg', parameters('nameprefix')))]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-hubvnet-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', variables('vnetname'))]"
+        "hubrg",
+        "vnet"
       ]
     },
-    {
+    "fwpolicy": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "fwpolicy-deploy",
@@ -494,7 +494,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "3995320789217660109"
+              "templateHash": "18370324618121379777"
             }
           },
           "parameters": {
@@ -516,8 +516,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "policy": {
               "type": "Microsoft.Network/firewallPolicies",
               "apiVersion": "2020-06-01",
               "name": "[parameters('policyname')]",
@@ -530,7 +530,7 @@
                 }
               }
             },
-            {
+            "platformrcgroup": {
               "type": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
               "apiVersion": "2020-06-01",
               "name": "[format('{0}/Platform-Rules', parameters('policyname'))]",
@@ -618,10 +618,10 @@
                 ]
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Network/firewallPolicies', parameters('policyname'))]"
+                "policy"
               ]
             }
-          ],
+          },
           "outputs": {
             "name": {
               "type": "string",
@@ -635,10 +635,10 @@
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}-hubvnet-rg', parameters('nameprefix')))]"
+        "hubrg"
       ]
     },
-    {
+    "fwpip": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "pip-deploy",
@@ -669,7 +669,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "8402162185499815973"
+              "templateHash": "11210262219866083643"
             }
           },
           "parameters": {
@@ -700,8 +700,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "fwipprefix": {
               "type": "Microsoft.Network/publicIPPrefixes",
               "apiVersion": "2020-06-01",
               "name": "[parameters('ipprefixname')]",
@@ -715,7 +715,7 @@
                 "ipTags": []
               }
             },
-            {
+            "fwip": {
               "type": "Microsoft.Network/publicIPAddresses",
               "apiVersion": "2020-06-01",
               "name": "[parameters('pipname')]",
@@ -730,10 +730,10 @@
                 }
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPPrefixes', parameters('ipprefixname'))]"
+                "fwipprefix"
               ]
             }
-          ],
+          },
           "outputs": {
             "id": {
               "type": "string",
@@ -743,10 +743,10 @@
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}-hubvnet-rg', parameters('nameprefix')))]"
+        "hubrg"
       ]
     },
-    {
+    "fw": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "fw-deploy",
@@ -767,13 +767,13 @@
             "value": "VNet"
           },
           "fwpolicyid": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-hubvnet-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'fwpolicy-deploy'), '2019-10-01').outputs.id.value]"
+            "value": "[reference('fwpolicy').outputs.id.value]"
           },
           "publicipid": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-hubvnet-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'pip-deploy'), '2019-10-01').outputs.id.value]"
+            "value": "[reference('fwpip').outputs.id.value]"
           },
           "subnetid": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-hubvnet-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', variables('vnetname')), '2019-10-01').outputs.subnets.value[3].id]"
+            "value": "[reference('vnet').outputs.subnets.value[3].id]"
           }
         },
         "template": {
@@ -783,7 +783,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "8852671976007191851"
+              "templateHash": "3367543079430017686"
             }
           },
           "parameters": {
@@ -885,25 +885,25 @@
               }
             }
           },
-          "resources": [
-            {
+          "resources": {
+            "firewall": {
               "type": "Microsoft.Network/azureFirewalls",
               "apiVersion": "2020-06-01",
               "name": "[parameters('fwname')]",
               "location": "[parameters('location')]",
               "properties": "[if(equals(parameters('fwtype'), 'VNet'), variables('vnetfwproperties').properties, if(equals(parameters('fwtype'), 'vWAN'), variables('hubfwproperties').properties, null()))]"
             }
-          ]
+          }
         }
       },
       "dependsOn": [
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-hubvnet-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'pip-deploy')]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-hubvnet-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'fwpolicy-deploy')]",
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}-hubvnet-rg', parameters('nameprefix')))]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-hubvnet-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', variables('vnetname'))]"
+        "fwpip",
+        "fwpolicy",
+        "hubrg",
+        "vnet"
       ]
     },
-    {
+    "vwan": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "vwan-deploy",
@@ -931,7 +931,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "2750460495032513094"
+              "templateHash": "7680479630770476577"
             }
           },
           "parameters": {
@@ -955,8 +955,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "wan": {
               "type": "Microsoft.Network/virtualWans",
               "apiVersion": "2020-06-01",
               "name": "[parameters('wanname')]",
@@ -968,7 +968,7 @@
                 "office365LocalBreakoutCategory": "None"
               }
             }
-          ],
+          },
           "outputs": {
             "id": {
               "type": "string",
@@ -978,10 +978,10 @@
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}-vwan-rg', parameters('nameprefix')))]"
+        "vwanrg"
       ]
     },
-    {
+    "vhub": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "vhub-deploy",
@@ -1002,7 +1002,7 @@
             "value": "10.10.0.0/24"
           },
           "wanid": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-vwan-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vwan-deploy'), '2019-10-01').outputs.id.value]"
+            "value": "[reference('vwan').outputs.id.value]"
           }
         },
         "template": {
@@ -1012,7 +1012,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "6471938911786706761"
+              "templateHash": "2415863490774923540"
             }
           },
           "parameters": {
@@ -1038,8 +1038,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "hub": {
               "type": "Microsoft.Network/virtualHubs",
               "apiVersion": "2020-06-01",
               "name": "[parameters('hubname')]",
@@ -1051,7 +1051,7 @@
                 }
               }
             }
-          ],
+          },
           "outputs": {
             "id": {
               "type": "string",
@@ -1063,17 +1063,17 @@
             },
             "vhubaddress": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualHubs', parameters('hubname'))).addressPrefix]"
+              "value": "[reference('hub').addressPrefix]"
             }
           }
         }
       },
       "dependsOn": [
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-vwan-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vwan-deploy')]",
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}-vwan-rg', parameters('nameprefix')))]"
+        "vwan",
+        "vwanrg"
       ]
     },
-    {
+    "vhubfwpolicy": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "vhubfwpolicy-deploy",
@@ -1098,7 +1098,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "3995320789217660109"
+              "templateHash": "18370324618121379777"
             }
           },
           "parameters": {
@@ -1120,8 +1120,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "policy": {
               "type": "Microsoft.Network/firewallPolicies",
               "apiVersion": "2020-06-01",
               "name": "[parameters('policyname')]",
@@ -1134,7 +1134,7 @@
                 }
               }
             },
-            {
+            "platformrcgroup": {
               "type": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
               "apiVersion": "2020-06-01",
               "name": "[format('{0}/Platform-Rules', parameters('policyname'))]",
@@ -1222,10 +1222,10 @@
                 ]
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Network/firewallPolicies', parameters('policyname'))]"
+                "policy"
               ]
             }
-          ],
+          },
           "outputs": {
             "name": {
               "type": "string",
@@ -1239,10 +1239,10 @@
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}-vwan-rg', parameters('nameprefix')))]"
+        "vwanrg"
       ]
     },
-    {
+    "vhubfw": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "vhubfw-deploy",
@@ -1263,13 +1263,13 @@
             "value": "vWAN"
           },
           "hubid": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-vwan-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vhub-deploy'), '2019-10-01').outputs.id.value]"
+            "value": "[reference('vhub').outputs.id.value]"
           },
           "hubpublicipcount": {
             "value": 1
           },
           "fwpolicyid": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-vwan-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vhubfwpolicy-deploy'), '2019-10-01').outputs.id.value]"
+            "value": "[reference('vhubfwpolicy').outputs.id.value]"
           }
         },
         "template": {
@@ -1279,7 +1279,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "8852671976007191851"
+              "templateHash": "3367543079430017686"
             }
           },
           "parameters": {
@@ -1381,24 +1381,24 @@
               }
             }
           },
-          "resources": [
-            {
+          "resources": {
+            "firewall": {
               "type": "Microsoft.Network/azureFirewalls",
               "apiVersion": "2020-06-01",
               "name": "[parameters('fwname')]",
               "location": "[parameters('location')]",
               "properties": "[if(equals(parameters('fwtype'), 'VNet'), variables('vnetfwproperties').properties, if(equals(parameters('fwtype'), 'vWAN'), variables('hubfwproperties').properties, null()))]"
             }
-          ]
+          }
         }
       },
       "dependsOn": [
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-vwan-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vhub-deploy')]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-vwan-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vhubfwpolicy-deploy')]",
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}-vwan-rg', parameters('nameprefix')))]"
+        "vhub",
+        "vhubfwpolicy",
+        "vwanrg"
       ]
     },
-    {
+    "vhubvpngw": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "vhubvpngw",
@@ -1416,7 +1416,7 @@
             "value": "[variables('vhubvpngwname')]"
           },
           "hubid": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-vwan-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vhub-deploy'), '2019-10-01').outputs.id.value]"
+            "value": "[reference('vhub').outputs.id.value]"
           },
           "asn": {
             "value": 65515
@@ -1429,7 +1429,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "10433069750951100331"
+              "templateHash": "3981792547306766732"
             }
           },
           "parameters": {
@@ -1454,8 +1454,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "hubvpngw": {
               "type": "Microsoft.Network/vpnGateways",
               "apiVersion": "2020-06-01",
               "name": "[parameters('hubvpngwname')]",
@@ -1469,7 +1469,7 @@
                 }
               }
             }
-          ],
+          },
           "outputs": {
             "id": {
               "type": "string",
@@ -1481,25 +1481,25 @@
             },
             "gwpublicip": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/vpnGateways', parameters('hubvpngwname'))).ipConfigurations[0].publicIpAddress]"
+              "value": "[reference('hubvpngw').ipConfigurations[0].publicIpAddress]"
             },
             "gwprivateip": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/vpnGateways', parameters('hubvpngwname'))).ipConfigurations[0].privateIpAddress]"
+              "value": "[reference('hubvpngw').ipConfigurations[0].privateIpAddress]"
             },
             "bgpasn": {
               "type": "int",
-              "value": "[reference(resourceId('Microsoft.Network/vpnGateways', parameters('hubvpngwname'))).bgpSettings.asn]"
+              "value": "[reference('hubvpngw').bgpSettings.asn]"
             }
           }
         }
       },
       "dependsOn": [
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-vwan-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vhub-deploy')]",
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}-vwan-rg', parameters('nameprefix')))]"
+        "vhub",
+        "vwanrg"
       ]
     },
-    {
+    "vwanvpnsite": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "vwanvpnsite-deploy",
@@ -1517,19 +1517,19 @@
             "value": "[parameters('vwanlocation')]"
           },
           "addressprefix": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-hubvnet-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', variables('vnetname')), '2019-10-01').outputs.vnetaddress.value[0]]"
+            "value": "[reference('vnet').outputs.vnetaddress.value[0]]"
           },
           "bgppeeringpddress": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-hubvnet-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vpngw-deploy'), '2019-10-01').outputs.vpngwbgpaddress.value]"
+            "value": "[reference('vpngw').outputs.vpngwbgpaddress.value]"
           },
           "ipaddress": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-hubvnet-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vpngw-deploy'), '2019-10-01').outputs.vpngwip.value]"
+            "value": "[reference('vpngw').outputs.vpngwip.value]"
           },
           "remotesiteasn": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-hubvnet-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vpngw-deploy'), '2019-10-01').outputs.bgpasn.value]"
+            "value": "[reference('vpngw').outputs.bgpasn.value]"
           },
           "wanid": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-vwan-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vwan-deploy'), '2019-10-01').outputs.id.value]"
+            "value": "[reference('vwan').outputs.id.value]"
           }
         },
         "template": {
@@ -1539,7 +1539,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "4413852781831650034"
+              "templateHash": "2739496555191546009"
             }
           },
           "parameters": {
@@ -1582,8 +1582,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "vpnsite": {
               "type": "Microsoft.Network/vpnSites",
               "apiVersion": "2020-06-01",
               "name": "[parameters('vpnsitename')]",
@@ -1608,7 +1608,7 @@
                 }
               }
             }
-          ],
+          },
           "outputs": {
             "id": {
               "type": "string",
@@ -1618,13 +1618,13 @@
         }
       },
       "dependsOn": [
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-hubvnet-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', variables('vnetname'))]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-hubvnet-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vpngw-deploy')]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-vwan-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vwan-deploy')]",
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}-vwan-rg', parameters('nameprefix')))]"
+        "vnet",
+        "vpngw",
+        "vwan",
+        "vwanrg"
       ]
     },
-    {
+    "vhubs2s": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "vhubs2s-deploy",
@@ -1636,13 +1636,13 @@
         "mode": "Incremental",
         "parameters": {
           "hubvpngwname": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-vwan-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vhubvpngw'), '2019-10-01').outputs.name.value]"
+            "value": "[reference('vhubvpngw').outputs.name.value]"
           },
           "psk": {
             "value": "[parameters('psk')]"
           },
           "vpnsiteid": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-vwan-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vwanvpnsite-deploy'), '2019-10-01').outputs.id.value]"
+            "value": "[reference('vwanvpnsite').outputs.id.value]"
           }
         },
         "template": {
@@ -1652,7 +1652,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "7703400377581823349"
+              "templateHash": "8552187519872589647"
             }
           },
           "parameters": {
@@ -1673,8 +1673,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "hubvpnconnection": {
               "type": "Microsoft.Network/vpnGateways/vpnConnections",
               "apiVersion": "2020-05-01",
               "name": "[format('{0}/HubToOnPremConnection', parameters('hubvpngwname'))]",
@@ -1687,16 +1687,16 @@
                 }
               }
             }
-          ]
+          }
         }
       },
       "dependsOn": [
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-vwan-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vhubvpngw')]",
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}-vwan-rg', parameters('nameprefix')))]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-vwan-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vwanvpnsite-deploy')]"
+        "vhubvpngw",
+        "vwanrg",
+        "vwanvpnsite"
       ]
     },
-    {
+    "vnets2s": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "vnets2s-deploy",
@@ -1715,26 +1715,26 @@
           },
           "addressprefixes": {
             "value": [
-              "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-vwan-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vhub-deploy'), '2019-10-01').outputs.vhubaddress.value]"
+              "[reference('vhub').outputs.vhubaddress.value]"
             ]
           },
           "connectionname": {
             "value": "[variables('vpnconname')]"
           },
           "bgppeeringpddress": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-vwan-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vhubvpngw'), '2019-10-01').outputs.gwprivateip.value]"
+            "value": "[reference('vhubvpngw').outputs.gwprivateip.value]"
           },
           "gwipaddress": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-vwan-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vhubvpngw'), '2019-10-01').outputs.gwpublicip.value]"
+            "value": "[reference('vhubvpngw').outputs.gwpublicip.value]"
           },
           "remotesiteasn": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-vwan-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vhubvpngw'), '2019-10-01').outputs.bgpasn.value]"
+            "value": "[reference('vhubvpngw').outputs.bgpasn.value]"
           },
           "psk": {
             "value": "[parameters('psk')]"
           },
           "vpngwid": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-hubvnet-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vpngw-deploy'), '2019-10-01').outputs.id.value]"
+            "value": "[reference('vpngw').outputs.id.value]"
           }
         },
         "template": {
@@ -1744,7 +1744,7 @@
             "_generator": {
               "name": "bicep",
               "version": "dev",
-              "templateHash": "12528836535334827814"
+              "templateHash": "15487890201661154567"
             }
           },
           "parameters": {
@@ -1797,8 +1797,8 @@
             }
           },
           "functions": [],
-          "resources": [
-            {
+          "resources": {
+            "localnetworkgw": {
               "type": "Microsoft.Network/localNetworkGateways",
               "apiVersion": "2020-06-01",
               "name": "[parameters('localnetworkgwname')]",
@@ -1814,7 +1814,7 @@
                 }
               }
             },
-            {
+            "s2sconnection": {
               "type": "Microsoft.Network/connections",
               "apiVersion": "2020-06-01",
               "name": "[parameters('connectionname')]",
@@ -1834,18 +1834,18 @@
                 }
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Network/localNetworkGateways', parameters('localnetworkgwname'))]"
+                "localnetworkgw"
               ]
             }
-          ]
+          }
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}-hubvnet-rg', parameters('nameprefix')))]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-vwan-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vhub-deploy')]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-vwan-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vhubvpngw')]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-hubvnet-rg', parameters('nameprefix'))), 'Microsoft.Resources/deployments', 'vpngw-deploy')]"
+        "hubrg",
+        "vhub",
+        "vhubvpngw",
+        "vpngw"
       ]
     }
-  ]
+  }
 }

@@ -51,7 +51,7 @@
       }
     }
   },
-  "resources": [],
+  "resources": {},
   "outputs": {
     "bicepObject": {
       "type": "array",
