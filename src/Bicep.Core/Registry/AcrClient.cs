@@ -7,12 +7,10 @@ using Azure.Containers.ContainerRegistry.Specialized;
 using Azure.Core;
 using Bicep.Core.Modules;
 using Bicep.Core.Registry.Oci;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Bicep.Core.Registry
@@ -28,19 +26,17 @@ namespace Bicep.Core.Registry
             this.tokenCredential = tokenCredential;
         }
 
-        public async Task<OciClientResult> PullAsync(OciArtifactModuleReference reference)
+        public async Task<OciClientResult> PullAsync(OciArtifactModuleReference moduleReference)
         {
             try
             {
-                var registryUri = new Uri($"https://{reference.Registry}");
+                var client = this.CreateClient(moduleReference);
+                string digest = await ResolveDigest(client, moduleReference);
 
-                var client = new ContainerRegistryClient(registryUri, tokenCredential);
-                string digest = await ResolveDigest(client, reference);
-
-                string modulePath = GetLocalPackageDirectory(reference);
+                string modulePath = GetLocalPackageDirectory(moduleReference);
                 CreateModuleDirectory(modulePath);
 
-                var blobClient = new ContainerRegistryArtifactBlobClient(registryUri, tokenCredential, reference.Repository);
+                var blobClient = this.CreateBlobClient(moduleReference);
                 await PullDigest(blobClient, digest, modulePath);
 
                 return new(true, null);
@@ -60,66 +56,44 @@ namespace Bicep.Core.Registry
             }
         }
 
-        private static void CreateModuleDirectory(string modulePath)
+        public async Task PushArtifactAsync(OciArtifactModuleReference moduleReference, StreamDescriptor config, params StreamDescriptor[] layers)
         {
-            try
+            // TODO: How do we choose this? Does it ever change?
+            var algorithmIdentifier = DescriptorFactory.AlgorithmIdentifierSha256;
+
+            var blobClient = this.CreateBlobClient(moduleReference);
+
+            config.ResetStream();
+            var configDescriptor = DescriptorFactory.CreateDescriptor(algorithmIdentifier, config);
+
+            config.ResetStream();
+            var configUploadResult = await blobClient.UploadBlobAsync(config.Stream);
+
+            var layerDescriptors = new List<OciDescriptor>(layers.Length);
+            foreach (var layer in layers)
             {
-                // ensure that the directory exists
-                Directory.CreateDirectory(modulePath);
-            }
-            catch (Exception exception)
-            {
-                throw new AcrClientException("Unable to create the local module directory.", exception);
-            }
-        }
+                layer.ResetStream();
+                var layerDescriptor = DescriptorFactory.CreateDescriptor(algorithmIdentifier, layer);
+                layerDescriptors.Add(layerDescriptor);
 
-        private static async Task<string> ResolveDigest(ContainerRegistryClient client, OciArtifactModuleReference reference)
-        {
-            var artifact = client.GetArtifact(reference.Repository, reference.Tag);
-            var manifestProperties = await artifact.GetManifestPropertiesAsync();
-            
-            return manifestProperties.Value.Digest;
-        }
-
-        private static async Task PullDigest(ContainerRegistryArtifactBlobClient client, string digest, string modulePath)
-        {
-            var manifestResult = await client.DownloadManifestAsync(digest);
-
-            // the SDK doesn't expose all the manifest properties we need
-            var manifest = DeserializeManifest(manifestResult.Value.Content);
-
-            foreach(var layer in manifest.Layers)
-            {
-                var fileName = layer.Annotations.TryGetValue("org.opencontainers.image.title", out var title) ? title : TrimSha(layer.Digest);
-
-                var layerPath = Path.Combine(modulePath, fileName) ?? throw new InvalidOperationException("Combined artifact path is null.");
-
-                var blobResult = await client.DownloadBlobAsync(layer.Digest);
-
-                using var fileStream = new FileStream(layerPath, FileMode.Create);
-                await blobResult.Value.Content.CopyToAsync(fileStream);
-            }
-        }
-
-        private static OciManifest DeserializeManifest(Stream stream)
-        {
-            using var streamReader = new StreamReader(stream, Encoding.UTF8, true, 4096, true);
-            using var reader = new JsonTextReader(streamReader);
-
-            var serializer = JsonSerializer.Create(new JsonSerializerSettings
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                NullValueHandling = NullValueHandling.Ignore,
-                TypeNameHandling = TypeNameHandling.None
-            });
-
-            var manifest = serializer.Deserialize<OciManifest>(reader);
-            if (manifest is not null)
-            {
-                return manifest;
+                layer.ResetStream();
+                var layerUploadResult = await blobClient.UploadBlobAsync(layer.Stream);
             }
 
-            throw new InvalidOperationException("Unable to deserialize artifact manifest content.");
+            var manifest = new OciManifest(2, configDescriptor, layerDescriptors);
+            using var manifestStream = new MemoryStream();
+            OciManifestSerialization.SerializeManifest(manifestStream, manifest);
+
+            manifestStream.Position = 0;
+            var manifestUploadResult = await blobClient.UploadManifestAsync(manifestStream, new UploadManifestOptions(ManifestMediaType.OciManifestV1));
+
+            manifestStream.Position = 0;
+            var manifestDigest = DescriptorFactory.ComputeDigest(algorithmIdentifier, manifestStream);
+
+            //var client = this.CreateClient(moduleReference);
+            //var manifestArtifact = client.GetArtifact(moduleReference.Repository, manifestDigest);
+
+            //var tagUpdateResult = await manifestArtifact.UpdateTagPropertiesAsync(moduleReference.Tag, new ArtifactTagProperties { Digest = manifestDigest });
         }
 
         public string GetLocalPackageDirectory(OciArtifactModuleReference reference)
@@ -141,6 +115,12 @@ namespace Bicep.Core.Registry
 
         public string GetLocalPackageEntryPointPath(OciArtifactModuleReference reference) => Path.Combine(this.GetLocalPackageDirectory(reference), "main.bicep");
 
+        private static Uri GetRegistryUri(OciArtifactModuleReference moduleReference) => new Uri($"https://{moduleReference.Registry}");
+
+        private ContainerRegistryClient CreateClient(OciArtifactModuleReference moduleReference) => new(GetRegistryUri(moduleReference), this.tokenCredential);
+
+        private ContainerRegistryArtifactBlobClient CreateBlobClient(OciArtifactModuleReference moduleReference) => new(GetRegistryUri(moduleReference), this.tokenCredential, moduleReference.Repository);
+
         private static string TrimSha(string digest)
         {
             int index = digest.IndexOf(':');
@@ -150,6 +130,47 @@ namespace Bicep.Core.Registry
             }
 
             return digest;
+        }
+
+        private static void CreateModuleDirectory(string modulePath)
+        {
+            try
+            {
+                // ensure that the directory exists
+                Directory.CreateDirectory(modulePath);
+            }
+            catch (Exception exception)
+            {
+                throw new AcrClientException("Unable to create the local module directory.", exception);
+            }
+        }
+
+        private static async Task<string> ResolveDigest(ContainerRegistryClient client, OciArtifactModuleReference reference)
+        {
+            var artifact = client.GetArtifact(reference.Repository, reference.Tag);
+            var manifestProperties = await artifact.GetManifestPropertiesAsync();
+
+            return manifestProperties.Value.Digest;
+        }
+
+        private static async Task PullDigest(ContainerRegistryArtifactBlobClient client, string digest, string modulePath)
+        {
+            var manifestResult = await client.DownloadManifestAsync(digest);
+
+            // the SDK doesn't expose all the manifest properties we need
+            var manifest = OciManifestSerialization.DeserializeManifest(manifestResult.Value.Content);
+
+            foreach (var layer in manifest.Layers)
+            {
+                var fileName = layer.Annotations.TryGetValue("org.opencontainers.image.title", out var title) ? title : TrimSha(layer.Digest);
+
+                var layerPath = Path.Combine(modulePath, fileName) ?? throw new InvalidOperationException("Combined artifact path is null.");
+
+                var blobResult = await client.DownloadBlobAsync(layer.Digest);
+
+                using var fileStream = new FileStream(layerPath, FileMode.Create);
+                await blobResult.Value.Content.CopyToAsync(fileStream);
+            }
         }
 
         private class AcrClientException : Exception

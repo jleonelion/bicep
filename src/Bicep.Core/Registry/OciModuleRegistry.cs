@@ -5,6 +5,7 @@ using Azure.Identity;
 using Bicep.Core.Diagnostics;
 using Bicep.Core.FileSystem;
 using Bicep.Core.Modules;
+using Bicep.Core.Registry.Oci;
 using Bicep.Core.Tracing;
 using System;
 using System.Collections.Generic;
@@ -76,7 +77,18 @@ namespace Bicep.Core.Registry
 
             return statuses;
         }
-        
+
+        public Task PublishModule(ModuleReference moduleReference, string moduleDirectory)
+        {
+            //var typed = ConvertReference(moduleReference);
+
+            //var config = new OciBlob()
+
+            //var manifest = new OciManifest(2, )
+
+            return Task.CompletedTask;
+        }
+
         private static string GetArtifactCachePath()
         {
             // TODO: Will NOT work if user profile is not loaded on Windows! (Az functions load exes like that)

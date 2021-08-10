@@ -6,9 +6,9 @@ using System.Collections.Immutable;
 
 namespace Bicep.Core.Registry.Oci
 {
-    public class OciBlob
+    public class OciDescriptor
     {
-        public OciBlob(string mediaType, string digest, long size, IDictionary<string, string>? annotations)
+        public OciDescriptor(string mediaType, string digest, long size, IDictionary<string, string>? annotations)
         {
             this.MediaType = mediaType;
             this.Digest = digest;

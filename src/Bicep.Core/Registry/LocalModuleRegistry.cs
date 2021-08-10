@@ -59,5 +59,7 @@ namespace Bicep.Core.Registry
 
             throw new ArgumentException($"Reference type '{reference.GetType().Name}' is not supported.");
         }
+
+        public Task PublishModule(ModuleReference moduleReference, string moduleDirectory) => throw new NotSupportedException("Local modules cannot be published.");
     }
 }

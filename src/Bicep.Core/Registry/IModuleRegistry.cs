@@ -52,5 +52,12 @@ namespace Bicep.Core.Registry
         /// </summary>
         /// <param name="references">module references</param>
         Task<IDictionary<ModuleReference, DiagnosticBuilder.ErrorBuilderDelegate>> RestoreModules(IEnumerable<ModuleReference> references);
+
+        /// <summary>
+        /// Publishes the module at the specified path to the registry.
+        /// </summary>
+        /// <param name="moduleReference">The module reference</param>
+        /// <param name="moduleDirectory">The module directory</param>
+        Task PublishModule(ModuleReference moduleReference, string moduleDirectory);
     }
 }

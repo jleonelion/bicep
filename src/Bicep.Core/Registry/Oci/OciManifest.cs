@@ -8,7 +8,7 @@ namespace Bicep.Core.Registry.Oci
 {
     public class OciManifest
     {
-        public OciManifest(int schemaVersion, OciBlob config, IEnumerable<OciBlob> layers)
+        public OciManifest(int schemaVersion, OciDescriptor config, IEnumerable<OciDescriptor> layers)
         {
             this.SchemaVersion = schemaVersion;
             this.Config = config;
@@ -17,8 +17,8 @@ namespace Bicep.Core.Registry.Oci
 
         public int SchemaVersion { get; }
 
-        public OciBlob Config { get; }
+        public OciDescriptor Config { get; }
 
-        public ImmutableArray<OciBlob> Layers { get; }
+        public ImmutableArray<OciDescriptor> Layers { get; }
     }
 }

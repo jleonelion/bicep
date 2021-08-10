@@ -1,7 +1,8 @@
-﻿// Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using Bicep.Core.Modules;
+using Bicep.Core.Registry.Oci;
 using System.Threading.Tasks;
 
 namespace Bicep.Core.Registry
@@ -9,6 +10,8 @@ namespace Bicep.Core.Registry
     public interface IOciArtifactClient
     {
         Task<OciClientResult> PullAsync(OciArtifactModuleReference reference);
+
+        Task PushArtifactAsync(OciArtifactModuleReference reference, StreamDescriptor config, params StreamDescriptor[] layers);
 
         string GetLocalPackageDirectory(OciArtifactModuleReference reference);
 

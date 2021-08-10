@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Bicep.Core.Modules;
+using Bicep.Core.Registry.Oci;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -76,6 +77,11 @@ namespace Bicep.Core.Registry
 }
 
             return Task.FromResult(new OciClientResult(false, error.ToString().Trim()));
+        }
+
+        public Task PushArtifactAsync(OciArtifactModuleReference reference, StreamDescriptor config, params StreamDescriptor[] layers)
+        {
+            throw new NotImplementedException();
         }
 
         public string GetLocalPackageDirectory(OciArtifactModuleReference reference)
