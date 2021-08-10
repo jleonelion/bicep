@@ -18,6 +18,7 @@ resource ts 'Microsoft.Resources/templateSpecs@2019-06-01-preview' existing = {
 }
 
 // deploy template spec
+var var1 string = 'value'
 resource deployTs 'Microsoft.Resources/deployments@2021-01-01' = {
   name: 'deployTs'
   // subscriptionId: '' // only needed for cross-sub deployments
@@ -29,6 +30,19 @@ resource deployTs 'Microsoft.Resources/deployments@2021-01-01' = {
     }
     parameters: {
       // parameters go here
+      param1: {
+        value: var1
+      }
+      // or you can reference keyvault just like in ARM
+      secretParam: { 
+        reference: {
+          keyVault: {
+            id: globalVault.id
+          }
+          secretName: 'secretValue'
+        }
+      }
+
     }
   }
 }
