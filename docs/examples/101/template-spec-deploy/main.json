@@ -25,6 +25,9 @@
     }
   },
   "functions": [],
+  "variables": {
+    "var1": "value"
+  },
   "resources": [
     {
       "type": "Microsoft.Resources/deployments",
@@ -35,7 +38,19 @@
         "templateLink": {
           "id": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('templateSpecSub'), parameters('templateSpecRg')), 'Microsoft.Resources/templateSpecs/versions', parameters('templateSpecName'), parameters('templateSpecVersion'))]"
         },
-        "parameters": {}
+        "parameters": {
+          "name": {
+            "value": "[variables('var1')]"
+          },
+          "secretParam": {
+            "reference": {
+              "keyVault": {
+                "id": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'global-rg'), 'Microsoft.KeyVault/vaults', 'global-kv')]"
+              },
+              "secretName": "secret1"
+            }
+          }
+        }
       }
     }
   ]
