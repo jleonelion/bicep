@@ -78,15 +78,14 @@ namespace Bicep.Core.Registry
             return statuses;
         }
 
-        public Task PublishModule(ModuleReference moduleReference, string moduleDirectory)
+        public async Task PublishModule(ModuleReference moduleReference, Stream compiled)
         {
-            //var typed = ConvertReference(moduleReference);
+            var typed = ConvertReference(moduleReference);
 
-            //var config = new OciBlob()
+            var config = new StreamDescriptor(Stream.Null, BicepMediaTypes.BicepModuleConfigV1);
+            var layer = new StreamDescriptor(compiled, BicepMediaTypes.BicepModuleLayerV1Json);
 
-            //var manifest = new OciManifest(2, )
-
-            return Task.CompletedTask;
+            await this.client.PushArtifactAsync(typed, config, layer);
         }
 
         private static string GetArtifactCachePath()

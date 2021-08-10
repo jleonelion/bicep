@@ -7,6 +7,7 @@ using Bicep.Core.Modules;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Bicep.Core.Registry
@@ -60,6 +61,6 @@ namespace Bicep.Core.Registry
             throw new ArgumentException($"Reference type '{reference.GetType().Name}' is not supported.");
         }
 
-        public Task PublishModule(ModuleReference moduleReference, string moduleDirectory) => throw new NotSupportedException("Local modules cannot be published.");
+        public Task PublishModule(ModuleReference moduleReference, Stream compiled) => throw new NotSupportedException("Local modules cannot be published.");
     }
 }

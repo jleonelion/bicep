@@ -8,6 +8,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -151,6 +152,12 @@ namespace Bicep.Core.Registry
             }
 
             return true;
+        }
+
+        public async Task PublishModule(ModuleReference moduleReference, Stream compiled)
+        {
+            var registry = this.GetRegistry(moduleReference);
+            await registry.PublishModule(moduleReference, compiled);
         }
 
         public void PruneRestoreStatuses()

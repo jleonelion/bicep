@@ -49,14 +49,12 @@ namespace Bicep.Cli.Commands
                 return 1;
             }
 
-            string moduleDirectory = Path.Combine(DirHelper.GetTempPath(), $"publish_{Guid.NewGuid():D}");
-            Directory.CreateDirectory(moduleDirectory);
+            var stream = new MemoryStream();
+            compilationWriter.ToStream(compilation, stream);
 
-            string moduleFile = Path.Combine(moduleDirectory, "main.json");
-
-            compilationWriter.ToFile(compilation, moduleFile);
-
-
+            stream.Position = 0;
+            // TODO: make it async
+            this.moduleDispatcher.PublishModule(moduleReference, stream).Wait();
 
             return 0;
         }

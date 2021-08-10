@@ -85,11 +85,12 @@ namespace Bicep.Core.Registry
             OciManifestSerialization.SerializeManifest(manifestStream, manifest);
 
             manifestStream.Position = 0;
-            var manifestUploadResult = await blobClient.UploadManifestAsync(manifestStream, new UploadManifestOptions(ManifestMediaType.OciManifestV1));
-
-            manifestStream.Position = 0;
             var manifestDigest = DescriptorFactory.ComputeDigest(algorithmIdentifier, manifestStream);
 
+            manifestStream.Position = 0;
+            // BUG: the client closes the stream :(
+            var manifestUploadResult = await blobClient.UploadManifestAsync(manifestStream, new UploadManifestOptions(ManifestMediaType.OciManifestV1));
+            
             //var client = this.CreateClient(moduleReference);
             //var manifestArtifact = client.GetArtifact(moduleReference.Repository, manifestDigest);
 

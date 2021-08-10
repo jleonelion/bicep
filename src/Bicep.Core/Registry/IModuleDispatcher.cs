@@ -7,6 +7,7 @@ using Bicep.Core.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Bicep.Core.Registry
@@ -26,6 +27,8 @@ namespace Bicep.Core.Registry
         Uri? TryGetLocalModuleEntryPointUri(Uri parentModuleUri, ModuleReference moduleReference, out DiagnosticBuilder.ErrorBuilderDelegate? failureBuilder);
 
         Task<bool> RestoreModules(IEnumerable<ModuleReference> moduleReferences);
+
+        Task PublishModule(ModuleReference moduleReference, Stream compiled);
 
         void PruneRestoreStatuses();
     }

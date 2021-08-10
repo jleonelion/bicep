@@ -19,6 +19,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -166,7 +167,14 @@ namespace Bicep.LangServer.UnitTests.Registry
 
             public string Scheme => "mock";
 
+            public RegistryCapabilities Capabilities => throw new NotImplementedException();
+
             public bool IsModuleRestoreRequired(ModuleReference reference) => true;
+
+            public Task PublishModule(ModuleReference moduleReference, Stream compiled)
+            {
+                throw new NotImplementedException();
+            }
 
             public Task<IDictionary<ModuleReference, DiagnosticBuilder.ErrorBuilderDelegate>> RestoreModules(IEnumerable<ModuleReference> references)
             {

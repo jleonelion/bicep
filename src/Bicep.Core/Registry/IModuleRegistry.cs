@@ -5,6 +5,7 @@ using Bicep.Core.Diagnostics;
 using Bicep.Core.Modules;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Bicep.Core.Registry
@@ -57,7 +58,7 @@ namespace Bicep.Core.Registry
         /// Publishes the module at the specified path to the registry.
         /// </summary>
         /// <param name="moduleReference">The module reference</param>
-        /// <param name="moduleDirectory">The module directory</param>
-        Task PublishModule(ModuleReference moduleReference, string moduleDirectory);
+        /// <param name="compiled">The compiled module</param>
+        Task PublishModule(ModuleReference moduleReference, Stream compiled);
     }
 }

@@ -11,7 +11,7 @@ namespace Bicep.Core.Registry.Oci
 {
     public class OciManifestSerialization
     {
-        private static readonly Encoding ManifestEncoding = Encoding.UTF8;
+        private static readonly Encoding ManifestEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
         public static OciManifest DeserializeManifest(Stream stream)
         {
