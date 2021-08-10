@@ -39,7 +39,7 @@ resource deployTs 'Microsoft.Resources/deployments@2021-01-01' = {
           keyVault: {
             id: globalVault.id
           }
-          secretName: 'secretValue'
+          secretName: 'secret1'
         }
       }
 
